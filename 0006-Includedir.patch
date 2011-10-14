@@ -1,0 +1,95 @@
+From a8e7973513a601826469ecefd30e9707d50aa876 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 30 Sep 2011 20:02:01 +0200
+Subject: [PATCH 6/9] Includedir
+
+---
+ ar/Makefile.linux       |    2 +-
+ as/Makefile.linux       |    2 +-
+ ld/Makefile.linux       |    2 +-
+ libstuff/Makefile.linux |    2 +-
+ misc/Makefile.linux     |    2 +-
+ otool/Makefile.linux    |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/ar/Makefile.linux b/ar/Makefile.linux
+index 7b3ae58..b3fd240 100644
+--- a/ar/Makefile.linux
++++ b/ar/Makefile.linux
+@@ -15,7 +15,7 @@ CFILES = \
+ 	$(NULL)
+ COBJS = $(CFILES:.c=.o)
+ 
+-XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include  -I/usr/include/xnu
+ 
+ all: ar
+ 
+diff --git a/as/Makefile.linux b/as/Makefile.linux
+index 9d767cc..d1349a4 100644
+--- a/as/Makefile.linux
++++ b/as/Makefile.linux
+@@ -43,7 +43,7 @@ COBJS_ppc = $(CFILES_ppc:%.c=$(ARCH_DIR)/ppc/%.o)
+ CFILES_ppc64 = $(CFILES_ppc)
+ COBJS_ppc64 = $(CFILES_ppc64:%.c=$(ARCH_DIR)/ppc64/%.o)
+ 
+-XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DNeXT_MOD -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DNeXT_MOD -I../include -I../../usr_include -I/usr/include/xnu
+ 
+ all: bin/as \
+      $(ARCH_DIR)/i386/as \
+diff --git a/ld/Makefile.linux b/ld/Makefile.linux
+index 9054d6c..deb3eb9 100644
+--- a/ld/Makefile.linux
++++ b/ld/Makefile.linux
+@@ -33,7 +33,7 @@ CFILES = \
+ 	$(NULL)
+ COBJS = $(CFILES:.c=.o)
+ 
+-XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include -I/usr/include/xnu
+ 
+ all: ld_classic
+ 
+diff --git a/libstuff/Makefile.linux b/libstuff/Makefile.linux
+index 179404e..bb4cecb 100644
+--- a/libstuff/Makefile.linux
++++ b/libstuff/Makefile.linux
+@@ -43,7 +43,7 @@ CFILES = \
+ 	$(NULL)
+ COBJS = $(CFILES:.c=.o)
+ 
+-XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DEMULATED_HOST_CPU_TYPE=CPU_TYPE_I386 -DEMULATED_HOST_CPU_SUBTYPE='CPU_SUBTYPE_INTEL(12, 1)' -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DEMULATED_HOST_CPU_TYPE=CPU_TYPE_I386 -DEMULATED_HOST_CPU_SUBTYPE='CPU_SUBTYPE_INTEL(12, 1)' -I../include -I../../usr_include -I/usr/include/xnu
+ 
+ all: libstuff.a
+ 
+diff --git a/misc/Makefile.linux b/misc/Makefile.linux
+index 0d17c2b..4ff09c0 100644
+--- a/misc/Makefile.linux
++++ b/misc/Makefile.linux
+@@ -31,7 +31,7 @@ COBJS_strings = $(CFILES_strings:.c=.o)
+ CFILES_strip = strip.c
+ COBJS_strip = $(CFILES_strip:.c=.o)
+ 
+-XCFLAGS = -fno-builtin-round -fno-builtin-trunc -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -fno-builtin-trunc -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include -I/usr/include/xnu
+ 
+ all: codesign_allocate \
+      install_name_tool \
+diff --git a/otool/Makefile.linux b/otool/Makefile.linux
+index 82d11b3..8e35319 100644
+--- a/otool/Makefile.linux
++++ b/otool/Makefile.linux
+@@ -21,7 +21,7 @@ COBJS = $(CFILES:.c=.o)
+ OBJCFILES = print_objc.c
+ OBJCOBJS = $(OBJCFILES:.c=.o)
+ 
+-XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include -I/usr/include/xnu
+ 
+ all: otool
+ 
+-- 
+1.7.1
+

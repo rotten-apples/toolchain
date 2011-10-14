@@ -1,0 +1,40 @@
+From 45910b07027d7f57c056b5325c5e279c5532417d Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sun, 2 Oct 2011 22:59:54 +0200
+Subject: [PATCH 3/3] Fix abort
+
+---
+ src/InternalMacros.h |   10 +---------
+ 1 files changed, 1 insertions(+), 9 deletions(-)
+
+diff --git a/src/InternalMacros.h b/src/InternalMacros.h
+index 25c1631..245cf52 100644
+--- a/src/InternalMacros.h
++++ b/src/InternalMacros.h
+@@ -29,14 +29,6 @@
+ 
+ #include <assert.h>
+ 
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-	extern void __assert_rtn(const char *, const char *, int, const char *) __attribute__((noreturn));
+-#ifdef __cplusplus
+-}
+-#endif
+-
+ #define UNW_STEP_SUCCESS 1
+ #define UNW_STEP_END     0
+ 
+@@ -49,7 +41,7 @@ struct v128 { unsigned int vec[4]; };
+ #define COMPILE_TIME_ASSERT( expr )    \
+ 		extern int compile_time_assert_failed[ ( expr ) ? 1 : -1 ] __attribute__( ( unused ) );
+ 
+-#define ABORT(msg) __assert_rtn(__func__, __FILE__, __LINE__, msg) 
++#define ABORT(msg) do { fprintf (stderr, "%s: %s:%d: %s\n", __func__, __FILE__, __LINE__, msg); abort(); } while (0)
+ 
+ #if NDEBUG
+ 	#define DEBUG_MESSAGE(msg, ...)  
+-- 
+1.7.1
+

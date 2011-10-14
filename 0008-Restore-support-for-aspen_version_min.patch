@@ -1,0 +1,25 @@
+From 47d6cc3b215b8fffee5c1b1cf73c4f8dca4ccd49 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Mon, 3 Oct 2011 08:00:12 +0200
+Subject: [PATCH 8/8] Restore support for -aspen_version_min
+
+---
+ src/ld/Options.cpp |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/ld/Options.cpp b/src/ld/Options.cpp
+index 83fbde3..ef64629 100644
+--- a/src/ld/Options.cpp
++++ b/src/ld/Options.cpp
+@@ -2191,7 +2191,7 @@ void Options::parse(int argc, const char* argv[])
+ 			else if ( strcmp(arg, "-macosx_version_min") == 0 ) {
+ 				setMacOSXVersionMin(argv[++i]);
+ 			}
+-			else if ( strcmp(arg, "-iphoneos_version_min") == 0 ) {
++			else if ( (strcmp(arg, "-aspen_version_min") == 0) || (strcmp(arg, "-iphone_version_min") == 0) || (strcmp(arg, "-iphoneos_version_min") == 0) ) {
+ 				setIPhoneVersionMin(argv[++i]);
+ 			}
+ 			else if ( strcmp(arg, "-multiply_defined") == 0 ) {
+-- 
+1.7.1
+

@@ -1,0 +1,28 @@
+From 1773a48ff7531813fec1a46bab665ff2fedb64fd Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sat, 1 Oct 2011 16:59:13 +0200
+Subject: [PATCH 5/8] Comment out more of LTO support
+
+---
+ src/ld/ld.cpp |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/src/ld/ld.cpp b/src/ld/ld.cpp
+index 4139c0c..61d8e48 100644
+--- a/src/ld/ld.cpp
++++ b/src/ld/ld.cpp
+@@ -3228,9 +3228,11 @@ const char* Linker::fileArch(const void* p)
+ 	if ( result != NULL  )
+ 		 return result;
+ 		 
++#if LTO_SUPPORT
+ 	result = lto::Reader::fileKind(bytes);
+ 	if ( result != NULL  )
+ 		 return result;
++#endif
+ 	
+ 	return "unsupported file format";	 
+ }
+-- 
+1.7.1
+

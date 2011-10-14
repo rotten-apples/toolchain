@@ -1,0 +1,1547 @@
+From 9d60dacd955503dda85181a5f1a0c34a5054a641 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Thu, 29 Sep 2011 13:09:27 +0200
+Subject: [PATCH 1/9] Import http://toolwhip.googlecode.com/svn/trunk/cctools@15
+
+---
+ Makefile.linux                           |    2 +
+ README.toolwhip                          |   17 ++++
+ ar/Makefile.linux                        |   29 ++++++
+ ar/append.c                              |    2 +-
+ ar/archive.c                             |   39 ++++----
+ ar/contents.c                            |    4 +-
+ ar/extern.h                              |    2 +-
+ ar/misc.c                                |    6 +-
+ ar/strmode-fbsd.c                        |  154 ++++++++++++++++++++++++++++++
+ as/Makefile.linux                        |   90 +++++++++++++++++
+ as/driver.c                              |    8 +--
+ as/dwarf2dbg.c                           |    2 +-
+ as/input-scrub.c                         |   12 +--
+ as/input-scrub.h                         |    2 +
+ as/messages.c                            |    2 -
+ as/sections.c                            |    1 +
+ include/mach-o/dyld.h                    |   13 +--
+ include/stuff/bytesex.h                  |    2 +-
+ include/stuff/emulated.h                 |    7 ++
+ include/stuff/macosx_deployment_target.h |    5 +
+ ld/Makefile.linux                        |   47 +++++++++
+ ld/ld.c                                  |    2 -
+ ld/ld.h                                  |    3 +
+ ld/pass1.c                               |    1 +
+ ld/symbols.c                             |    2 +-
+ ld/uuid.c                                |   71 +++++++++++++-
+ libstuff/Makefile.linux                  |   57 +++++++++++
+ libstuff/apple_version.c                 |    1 +
+ libstuff/emulated.c                      |  152 +++++++++++++++++++++++++++++
+ libstuff/execute.c                       |    7 +-
+ misc/Makefile.linux                      |  104 ++++++++++++++++++++
+ misc/libtool.c                           |    2 -
+ misc/strip.c                             |    8 +-
+ otool/Makefile.linux                     |   39 ++++++++
+ otool/main.c                             |   12 +++
+ otool/notify.c                           |    2 +-
+ otool/notify.h                           |    2 +-
+ 37 files changed, 834 insertions(+), 77 deletions(-)
+ create mode 100644 Makefile.linux
+ create mode 100644 README.toolwhip
+ create mode 100644 ar/Makefile.linux
+ create mode 100644 ar/strmode-fbsd.c
+ create mode 100644 as/Makefile.linux
+ create mode 100644 include/stuff/emulated.h
+ create mode 100644 ld/Makefile.linux
+ create mode 100644 libstuff/Makefile.linux
+ create mode 100644 libstuff/apple_version.c
+ create mode 100644 libstuff/emulated.c
+ create mode 100644 misc/Makefile.linux
+ create mode 100644 otool/Makefile.linux
+
+diff --git a/Makefile.linux b/Makefile.linux
+new file mode 100644
+index 0000000..11dd17e
+--- /dev/null
++++ b/Makefile.linux
+@@ -0,0 +1,2 @@
++all clean: libstuff ar as ld misc otool
++	@for i in $^ ; do $(MAKE) -C $${i} -f Makefile.linux $@ ; done
+diff --git a/README.toolwhip b/README.toolwhip
+new file mode 100644
+index 0000000..09a595a
+--- /dev/null
++++ b/README.toolwhip
+@@ -0,0 +1,17 @@
++Home: http://www.opensource.apple.com/darwinsource/
++URL: http://www.opensource.apple.com/darwinsource/tarballs/apsl/cctools-698.1.tar.gz
++Version: cctools 698.1 (Xcode Tools 3.1.2)
++License: APSL (most portions), GPL (as)
++License File: APPLE_LICENSE, as/COPYING
++Local Vendor Branch: http://toolwhip.googlecode.com/svn/vendor/cctools
++Local Trunk: http://toolwhip.googlecode.com/svn/trunk/cctools
++
++Description:
++cctools contains much of the development toolchain for Mac OS X, much like
++GNU binutils.  Among other tools, it includes Apple's versions of ar, as, nm,
++strings, strip, and an older version of ld.  Apple's version of as is based on
++GNU as 1.38.
++
++Local Modifications:
++Only this file, README.toolwhip, has been added to the local vendor branch.
++All other local modifications are made on the local trunk.
+diff --git a/ar/Makefile.linux b/ar/Makefile.linux
+new file mode 100644
+index 0000000..7b3ae58
+--- /dev/null
++++ b/ar/Makefile.linux
+@@ -0,0 +1,29 @@
++NULL =
++
++CFILES = \
++	append.c \
++	ar.c \
++	archive.c \
++	contents.c \
++	delete.c \
++	extract.c \
++	misc.c \
++	move.c \
++	print.c \
++	replace.c \
++	strmode-fbsd.c \
++	$(NULL)
++COBJS = $(CFILES:.c=.o)
++
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++
++all: ar
++
++ar: $(COBJS)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++.c.o:
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++clean:
++	-rm -rf ar $(COBJS)
+diff --git a/ar/append.c b/ar/append.c
+index 44be5c8..b497b01 100644
+--- a/ar/append.c
++++ b/ar/append.c
+@@ -95,7 +95,7 @@ append(argv)
+ 
+ 	afd = open_archive(O_CREAT|O_RDWR);
+ 	if (lseek(afd, (off_t)0, SEEK_END) == (off_t)-1)
+-		error(archive);
++		ar_error(archive);
+ 
+ 	/* Read from disk, write to an archive; pad on write. */
+ 	SETCF(0, 0, afd, archive, WPAD);
+diff --git a/ar/archive.c b/ar/archive.c
+index 12bd0ed..7eac928 100644
+--- a/ar/archive.c
++++ b/ar/archive.c
+@@ -83,6 +83,7 @@ static char rcsid[] = "$NetBSD: archive.c,v 1.7 1995/03/26 03:27:46 glass Exp $"
+ 
+ #include "archive.h"
+ #include "extern.h"
++#include "stuff/ofile.h"
+ 
+ typedef struct ar_hdr HDR;
+ static char hb[sizeof(HDR) + 1];	/* real header */
+@@ -107,11 +108,11 @@ open_archive(mode)
+ 			goto opened;
+ 		}
+ 		if (errno != EEXIST)
+-			error(archive);
++			ar_error(archive);
+ 		mode &= ~O_EXCL;
+ 	}
+ 	if ((fd = open(archive, mode, DEFFILEMODE)) < 0)
+-		error(archive);
++		ar_error(archive);
+ 
+ 	if((mode & O_ACCMODE) == O_RDONLY)
+ 	    goto skip_flock;
+@@ -157,7 +158,7 @@ opened:
+ 		case EISDIR:
+ 		case EDEADLK:
+ 		case ESTALE:
+-			error(archive);
++			ar_error(archive);
+ 			break;
+ 
+ 		/* Locking is supported but we are out of resources right now */
+@@ -166,7 +167,9 @@ opened:
+ 		/* Locking seems to not be working */
+ 		case ENOTSUP:
+ 		case EHOSTUNREACH:
++#ifdef EBADRPC
+ 		case EBADRPC:
++#endif
+ 		default:
+ 			/* Filesystem does not support locking */
+ 			break;
+@@ -183,7 +186,7 @@ skip_flock:
+ 		if ((nr = read(fd, buf, SARMAG) != SARMAG)) {
+ 			if (nr >= 0)
+ 				badfmt();
+-			error(archive);
++			ar_error(archive);
+ 		} else if (bcmp(buf, ARMAG, SARMAG)) {
+ 			uint32_t magic;
+ 			memcpy(&magic, buf, sizeof(uint32_t));
+@@ -199,7 +202,7 @@ skip_flock:
+ 			badfmt();
+ 		}
+ 	} else if (write(fd, ARMAG, SARMAG) != SARMAG)
+-		error(archive);
++		ar_error(archive);
+ 
+ 	if ((mode & O_ACCMODE) == O_RDWR)
+ 		archive_opened_for_writing = 1;
+@@ -239,7 +242,7 @@ get_arobj(fd)
+ 		if (!nr)
+ 			return (0);
+ 		if (nr < 0)
+-			error(archive);
++			ar_error(archive);
+ 		badfmt();
+ 	}
+ 
+@@ -272,7 +275,7 @@ get_arobj(fd)
+ 		nr = read(fd, chdr.name, len);
+ 		if (nr != len) {
+ 			if (nr < 0)
+-				error(archive);
++				ar_error(archive);
+ 			badfmt();
+ 		}
+ 		chdr.name[len] = 0;
+@@ -340,21 +343,21 @@ put_arobj(cfp, sb)
+ 			(void)sprintf(hb, HDR3, name, (long int)tv_sec,
+ 			    (unsigned int)(u_short)sb->st_uid,
+ 			    (unsigned int)(u_short)sb->st_gid,
+-			    sb->st_mode, sb->st_size, ARFMAG);
++			    sb->st_mode, (int64_t)sb->st_size, ARFMAG);
+ 			lname = 0;
+ 		} else if (lname > sizeof(hdr->ar_name) || strchr(name, ' '))
+ 			(void)sprintf(hb, HDR1, AR_EFMT1, (lname + 3) & ~3,
+ 			    (long int)tv_sec,
+ 			    (unsigned int)(u_short)sb->st_uid,
+ 			    (unsigned int)(u_short)sb->st_gid,
+-			    sb->st_mode, sb->st_size + ((lname + 3) & ~3),
++			    sb->st_mode, (int64_t)sb->st_size + ((lname + 3) & ~3),
+ 			    ARFMAG);
+ 		else {
+ 			lname = 0;
+ 			(void)sprintf(hb, HDR2, name, (long int)tv_sec,
+ 			    (unsigned int)(u_short)sb->st_uid,
+ 			    (unsigned int)(u_short)sb->st_gid,
+-			    sb->st_mode, sb->st_size, ARFMAG);
++			    sb->st_mode, (int64_t)sb->st_size, ARFMAG);
+ 		}
+ 		size = sb->st_size;
+ 	} else {
+@@ -364,7 +367,7 @@ put_arobj(cfp, sb)
+ 	}
+ 
+ 	if (write(cfp->wfd, hb, sizeof(HDR)) != sizeof(HDR))
+-		error(cfp->wname);
++		ar_error(cfp->wname);
+ 	/*
+ 	 * For Rhapsody if long names are used then the name is padded with
+ 	 * '\0's to a 4 byte size.  This keeps members on 4-byte boundaries
+@@ -372,13 +375,13 @@ put_arobj(cfp, sb)
+ 	 */
+ 	if (lname) {
+ 		if (write(cfp->wfd, name, lname) != (int)lname)
+-			error(cfp->wname);
++			ar_error(cfp->wname);
+ 		already_written = lname;
+ 		if ((lname % 4) != 0) {
+ 			static char pad[3] = "\0\0\0";
+ 			if (write(cfp->wfd, pad, 4-(lname%4)) !=
+ 			    (int)(4-(lname%4)))
+-				error(cfp->wname);
++				ar_error(cfp->wname);
+ 			already_written += 4 - (lname % 4);
+ 		}
+ 	}
+@@ -422,23 +425,23 @@ copy_ar(cfp, size)
+ 		sz -= nr;
+ 		for (off = 0; off < nr; nr -= off, off += nw)
+ 			if ((nw = write(to, buf + off, nr)) < 0)
+-				error(cfp->wname);
++				ar_error(cfp->wname);
+ 	}
+ 	if (sz) {
+ 		if (nr == 0)
+ 			badfmt();
+-		error(cfp->rname);
++		ar_error(cfp->rname);
+ 	}
+ 
+ 	if (cfp->flags & RPAD && (size + chdr.lname) & 1 &&
+ 	    (nr = read(from, buf, 1)) != 1) {
+ 		if (nr == 0)
+ 			badfmt();
+-		error(cfp->rname);
++		ar_error(cfp->rname);
+ 	}
+ 	if (cfp->flags & WPAD && (size + already_written) & 1 &&
+ 	    write(to, &pad, 1) != 1)
+-		error(cfp->wname);
++		ar_error(cfp->wname);
+ }
+ 
+ /*
+@@ -453,5 +456,5 @@ skip_arobj(fd)
+ 
+ 	len = chdr.size + ((chdr.size + chdr.lname) & 1);
+ 	if (lseek(fd, len, SEEK_CUR) == (off_t)-1)
+-		error(archive);
++		ar_error(archive);
+ }
+diff --git a/ar/contents.c b/ar/contents.c
+index 83cec42..f4be911 100644
+--- a/ar/contents.c
++++ b/ar/contents.c
+@@ -75,7 +75,7 @@ static char rcsid[] = "$OpenBSD: contents.c,v 1.2 1996/06/26 05:31:19 deraadt Ex
+ #include <fcntl.h>
+ #include <stdio.h>
+ #include <string.h>
+-#include <tzfile.h>
++#include <time.h>
+ #include <unistd.h>
+ 
+ #include "archive.h"
+@@ -104,7 +104,7 @@ contents(argv)
+ 		if (options & AR_V) {
+ 			(void)strmode(chdr.mode, buf);
+ 			(void)printf("%s %6d/%-6d %8qd ",
+-			    buf + 1, chdr.uid, chdr.gid, chdr.size);
++			    buf + 1, chdr.uid, chdr.gid, (int64_t)chdr.size);
+ 			tp = localtime(&chdr.date);
+ 			(void)strftime(buf, sizeof(buf), "%b %e %H:%M %Y", tp);
+ 			(void)printf("%s %s\n", buf, file);
+diff --git a/ar/extern.h b/ar/extern.h
+index 036647b..3c078cc 100644
+--- a/ar/extern.h
++++ b/ar/extern.h
+@@ -63,7 +63,7 @@ void	badfmt __P((void));
+ int	compare __P((char *));
+ int	contents __P((char **));
+ int	delete __P((char **));
+-void	error __P((char *));
++void	ar_error __P((char *));
+ int	extract __P((char **));
+ char   *files __P((char **argv));
+ int	move __P((char **));
+diff --git a/ar/misc.c b/ar/misc.c
+index b0ac04f..61623a1 100644
+--- a/ar/misc.c
++++ b/ar/misc.c
+@@ -105,7 +105,7 @@ tmp()
+ 	sigfillset(&set);
+ 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
+ 	if ((fd = mkstemp(path)) == -1)
+-		error(tname);
++		ar_error(tname);
+         (void)unlink(path);
+ 	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+ 	return (fd);
+@@ -164,12 +164,12 @@ void
+ badfmt()
+ {
+ 
+-	errno = EFTYPE;
++	errno = EINVAL;
+ 	err(1, "%s", archive);
+ }
+ 
+ void
+-error(name)
++ar_error(name)
+ 	char *name;
+ {
+ 
+diff --git a/ar/strmode-fbsd.c b/ar/strmode-fbsd.c
+new file mode 100644
+index 0000000..f91f8c6
+--- /dev/null
++++ b/ar/strmode-fbsd.c
+@@ -0,0 +1,154 @@
++/* Libc-498.1.1/string/strmode-fbsd.c */
++/*-
++ * Copyright (c) 1990, 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#if defined(LIBC_SCCS) && !defined(lint)
++static char sccsid[] = "@(#)strmode.c	8.3 (Berkeley) 8/15/94";
++#endif /* LIBC_SCCS and not lint */
++#include <sys/cdefs.h>
++
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <string.h>
++
++void
++strmode(mode, p)
++	mode_t mode;
++	char *p;
++{
++	 /* print type */
++	switch (mode & S_IFMT) {
++	case S_IFDIR:			/* directory */
++		*p++ = 'd';
++		break;
++	case S_IFCHR:			/* character special */
++		*p++ = 'c';
++		break;
++	case S_IFBLK:			/* block special */
++		*p++ = 'b';
++		break;
++	case S_IFREG:			/* regular */
++		*p++ = '-';
++		break;
++	case S_IFLNK:			/* symbolic link */
++		*p++ = 'l';
++		break;
++	case S_IFSOCK:			/* socket */
++		*p++ = 's';
++		break;
++#ifdef S_IFIFO
++	case S_IFIFO:			/* fifo */
++		*p++ = 'p';
++		break;
++#endif
++#ifdef S_IFWHT
++	case S_IFWHT:			/* whiteout */
++		*p++ = 'w';
++		break;
++#endif
++	default:			/* unknown */
++		*p++ = '?';
++		break;
++	}
++	/* usr */
++	if (mode & S_IRUSR)
++		*p++ = 'r';
++	else
++		*p++ = '-';
++	if (mode & S_IWUSR)
++		*p++ = 'w';
++	else
++		*p++ = '-';
++	switch (mode & (S_IXUSR | S_ISUID)) {
++	case 0:
++		*p++ = '-';
++		break;
++	case S_IXUSR:
++		*p++ = 'x';
++		break;
++	case S_ISUID:
++		*p++ = 'S';
++		break;
++	case S_IXUSR | S_ISUID:
++		*p++ = 's';
++		break;
++	}
++	/* group */
++	if (mode & S_IRGRP)
++		*p++ = 'r';
++	else
++		*p++ = '-';
++	if (mode & S_IWGRP)
++		*p++ = 'w';
++	else
++		*p++ = '-';
++	switch (mode & (S_IXGRP | S_ISGID)) {
++	case 0:
++		*p++ = '-';
++		break;
++	case S_IXGRP:
++		*p++ = 'x';
++		break;
++	case S_ISGID:
++		*p++ = 'S';
++		break;
++	case S_IXGRP | S_ISGID:
++		*p++ = 's';
++		break;
++	}
++	/* other */
++	if (mode & S_IROTH)
++		*p++ = 'r';
++	else
++		*p++ = '-';
++	if (mode & S_IWOTH)
++		*p++ = 'w';
++	else
++		*p++ = '-';
++	switch (mode & (S_IXOTH | S_ISVTX)) {
++	case 0:
++		*p++ = '-';
++		break;
++	case S_IXOTH:
++		*p++ = 'x';
++		break;
++	case S_ISVTX:
++		*p++ = 'T';
++		break;
++	case S_IXOTH | S_ISVTX:
++		*p++ = 't';
++		break;
++	}
++	*p++ = ' ';		/* will be a '+' if ACL's implemented */
++	*p = '\0';
++}
+diff --git a/as/Makefile.linux b/as/Makefile.linux
+new file mode 100644
+index 0000000..9d767cc
+--- /dev/null
++++ b/as/Makefile.linux
+@@ -0,0 +1,90 @@
++NULL =
++
++CFILES = \
++	app.c \
++	as.c \
++	dwarf2dbg.c \
++	atof-generic.c \
++	atof-ieee.c \
++	expr.c \
++	fixes.c \
++	flonum-const.c \
++	flonum-copy.c \
++	flonum-mult.c \
++	frags.c \
++	hash.c \
++	hex-value.c \
++	input-file.c \
++	input-scrub.c \
++	layout.c \
++	messages.c \
++	obstack.c \
++	read.c \
++	sections.c \
++	symbols.c \
++	write_object.c \
++	xmalloc.c \
++	$(NULL)
++
++CFILES_driver = driver.c
++COBJS_driver = $(CFILES_driver:%.c=bin/%.o)
++
++ARCH_DIR=libexec/gcc/darwin
++
++CFILES_i386 = $(CFILES) i386.c
++COBJS_i386 = $(CFILES_i386:%.c=$(ARCH_DIR)/i386/%.o)
++
++CFILES_x86_64 = $(CFILES_i386)
++COBJS_x86_64 = $(CFILES_x86_64:%.c=$(ARCH_DIR)/x86_64/%.o)
++
++CFILES_ppc = $(CFILES) ppc.c
++COBJS_ppc = $(CFILES_ppc:%.c=$(ARCH_DIR)/ppc/%.o)
++
++CFILES_ppc64 = $(CFILES_ppc)
++COBJS_ppc64 = $(CFILES_ppc64:%.c=$(ARCH_DIR)/ppc64/%.o)
++
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DNeXT_MOD -I../include -I../../usr_include
++
++all: bin/as \
++     $(ARCH_DIR)/i386/as \
++     $(ARCH_DIR)/x86_64/as \
++     $(ARCH_DIR)/ppc/as \
++     $(ARCH_DIR)/ppc64/as
++
++bin/as: $(COBJS_driver)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS_driver): bin/%.o: %.c
++	@mkdir -p $(@D)
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++$(ARCH_DIR)/i386/as: $(COBJS_i386)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS_i386): $(ARCH_DIR)/i386/%.o: %.c
++	@mkdir -p $(@D)
++	$(CC) $(CFLAGS) $(XCFLAGS) -DI386 -c -o $@ $<
++
++$(ARCH_DIR)/x86_64/as: $(COBJS_x86_64)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS_x86_64): $(ARCH_DIR)/x86_64/%.o: %.c
++	@mkdir -p $(@D)
++	$(CC) $(CFLAGS) $(XCFLAGS) -DI386 -DARCH64 -c -o $@ $<
++
++$(ARCH_DIR)/ppc/as: $(COBJS_ppc)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS_ppc): $(ARCH_DIR)/ppc/%.o: %.c
++	@mkdir -p $(@D)
++	$(CC) $(CFLAGS) $(XCFLAGS) -DPPC -c -o $@ $<
++
++$(ARCH_DIR)/ppc64/as: $(COBJS_ppc64)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS_ppc64): $(ARCH_DIR)/ppc64/%.o: %.c
++	@mkdir -p $(@D)
++	$(CC) $(CFLAGS) $(XCFLAGS) -DPPC -DARCH64 -c -o $@ $<
++
++clean:
++	-rm -rf bin libexec
+diff --git a/as/driver.c b/as/driver.c
+index e7258c8..22f0c75 100644
+--- a/as/driver.c
++++ b/as/driver.c
+@@ -49,7 +49,6 @@ char **envp)
+     char *p, c, *arch_name, *as, *as_local;
+     char **llvm_mc_argv;
+     char *prefix, buf[MAXPATHLEN], resolved_name[PATH_MAX];
+-    unsigned long bufsize;
+     struct arch_flag arch_flag;
+     const struct arch_flag *arch_flags, *family_arch_flag;
+     enum bool oflag_specified;
+@@ -62,13 +61,8 @@ char **envp)
+ 	/*
+ 	 * Construct the prefix to the assembler driver.
+ 	 */
+-	bufsize = MAXPATHLEN;
+ 	p = buf;
+-	i = _NSGetExecutablePath(p, &bufsize);
+-	if(i == -1){
+-	    p = allocate(bufsize);
+-	    _NSGetExecutablePath(p, &bufsize);
+-	}
++	readlink("/proc/self/exe", buf, sizeof(buf));
+ 	prefix = realpath(p, resolved_name);
+ 	if(realpath == NULL)
+ 	    system_fatal("realpath(3) for %s failed", p);
+diff --git a/as/dwarf2dbg.c b/as/dwarf2dbg.c
+index edcc22f..a10baeb 100644
+--- a/as/dwarf2dbg.c
++++ b/as/dwarf2dbg.c
+@@ -56,7 +56,7 @@
+ #endif
+ 
+ #include "dwarf2dbg.h"
+-#include <filenames.h>
++#include "filenames.h"
+ 
+ #ifdef HAVE_DOS_BASED_FILE_SYSTEM
+ /* We need to decide which character to use as a directory separator.
+diff --git a/as/input-scrub.c b/as/input-scrub.c
+index aafd9cd..75fbef6 100644
+--- a/as/input-scrub.c
++++ b/as/input-scrub.c
+@@ -336,6 +336,7 @@ unsigned int *line_ret)
+     }
+ }
+ 
++#ifdef OLD_PROJECTBUILDER_INTERFACE
+ /*
+  * as_where_ProjectBuilder() returns the fileName, directory, and line number
+  * to be used to tell ProjectBuilder where the error is.  Note that the '/'
+@@ -370,6 +371,7 @@ int *line)
+ 	    strncat(directory_buf, p, q - p);
+ 	}
+ }
++#endif /* OLD_PROJECTBUILDER_INTERFACE */
+ 
+ /*
+  *			a s _ p e r r o r
+@@ -384,15 +386,7 @@ char *filename)
+   fprintf (stderr,"as:file(%s) %s! ",
+ 	   filename, gripe
+ 	   );
+-  if (errno > sys_nerr)
+-    {
+-      fprintf (stderr, "Unknown error #%d.", errno);
+-    }
+-  else
+-    {
+-      fprintf (stderr, "%s.", sys_errlist [errno]);
+-    }
+-  (void)putc('\n', stderr);
++  fprintf(stderr, "%s.\n", strerror(errno));
+   errno = 0;			/* After reporting, clear it. */
+   if (input_file_is_open())	/* RMS says don't mention line # if not needed. */
+     {
+diff --git a/as/input-scrub.h b/as/input-scrub.h
+index 66c5ff2..a89ccb4 100644
+--- a/as/input-scrub.h
++++ b/as/input-scrub.h
+@@ -28,10 +28,12 @@ extern void as_where(
+ extern void as_file_and_line(
+     char **file_ret,
+     unsigned int *line_ret);
++#ifdef OLD_PROJECTBUILDER_INTERFACE
+ extern void as_where_ProjectBuilder(
+     char **fileName,
+     char **directory,
+     int *line);
++#endif /* OLD_PROJECTBUILDER_INTERFACE */
+ extern void as_perror(
+     char *gripe,
+     char *filename);
+diff --git a/as/messages.c b/as/messages.c
+index 001a2a8..c2af1de 100644
+--- a/as/messages.c
++++ b/as/messages.c
+@@ -25,8 +25,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+ #include <mach/mach_init.h>
+ #if defined(__OPENSTEP__) || defined(__GONZO_BUNSEN_BEAKER__)
+ #include <servers/netname.h>
+-#else
+-#include <servers/bootstrap.h>
+ #endif
+ #include "as.h"
+ #include "input-scrub.h"
+diff --git a/as/sections.c b/as/sections.c
+index 5b00b02..72b6388 100644
+--- a/as/sections.c
++++ b/as/sections.c
+@@ -24,6 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+  * Mach-O sections are chains of fragments.
+  */
+ #include <stdlib.h>
++#include <string.h>
+ #include <strings.h>
+ #include "sections.h"
+ #include "obstack.h"
+diff --git a/include/mach-o/dyld.h b/include/mach-o/dyld.h
+index c7ab7b7..16f9983 100644
+--- a/include/mach-o/dyld.h
++++ b/include/mach-o/dyld.h
+@@ -32,10 +32,6 @@ extern "C" {
+ #endif
+ 
+ #include <mach-o/loader.h>
+-#include <AvailabilityMacros.h>
+-#ifndef AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER
+-#define AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER
+-#endif
+ 
+ #ifndef ENUM_DYLD_BOOL
+ #define ENUM_DYLD_BOOL
+@@ -108,8 +104,7 @@ extern void * NSGetSectionDataInObjectFileImage(
+     unsigned long *size); /* can be NULL */
+ /* SPI first appeared in Mac OS X 10.3 */
+ extern enum DYLD_BOOL NSHasModInitObjectFileImage(
+-    NSObjectFileImage objectFileImage)
+-    AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER;
++    NSObjectFileImage objectFileImage);
+ 
+ /* module API */
+ typedef void * NSModule;
+@@ -286,8 +281,7 @@ extern enum DYLD_BOOL _dyld_image_containing_address(
+     unsigned long address);
+ /* SPI first appeared in Mac OS X 10.3 */
+ extern struct mach_header * _dyld_get_image_header_containing_address(
+-    unsigned long address)
+-    AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER;
++    unsigned long address);
+ 
+ extern void _dyld_moninit(
+     void (*monaddition)(char *lowpc, char *highpc));
+@@ -295,8 +289,7 @@ extern enum DYLD_BOOL _dyld_launched_prebound(
+     void);
+ /* SPI first appeared in Mac OS X 10.3 */
+ extern enum DYLD_BOOL _dyld_all_twolevel_modules_prebound(
+-    void)
+-    AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER;
++    void);
+ 
+ extern void _dyld_lookup_and_bind(
+     const char *symbol_name,
+diff --git a/include/stuff/bytesex.h b/include/stuff/bytesex.h
+index 238e67d..6242ef9 100644
+--- a/include/stuff/bytesex.h
++++ b/include/stuff/bytesex.h
+@@ -234,7 +234,7 @@ __private_extern__ void swap_i386_thread_state(
+ /* current i386 thread states */
+ #if i386_THREAD_STATE == 1
+ __private_extern__ void swap_i386_float_state(
+-    struct __darwin_i386_float_state *fpu,
++    i386_float_state_t *fpu,
+     enum byte_sex target_byte_sex);
+ 
+ __private_extern__ void swap_i386_exception_state(
+diff --git a/include/stuff/emulated.h b/include/stuff/emulated.h
+new file mode 100644
+index 0000000..dccdc41
+--- /dev/null
++++ b/include/stuff/emulated.h
+@@ -0,0 +1,7 @@
++#ifndef _STUFF_EMULATED_H
++#define _STUFF_EMULATED_H
++
++void qsort_r(void*, size_t, size_t, void*,
++             int(*)(void*, const void*, const void*));
++
++#endif /* _STUFF_EMULATED_H */
+diff --git a/include/stuff/macosx_deployment_target.h b/include/stuff/macosx_deployment_target.h
+index ed2c84e..404fae4 100644
+--- a/include/stuff/macosx_deployment_target.h
++++ b/include/stuff/macosx_deployment_target.h
+@@ -20,6 +20,9 @@
+  * 
+  * @APPLE_LICENSE_HEADER_END@
+  */
++#ifndef _STUFF_MACOSX_DEPLOYMENT_TARGET_H_
++#define _STUFF_MACOSX_DEPLOYMENT_TARGET_H_
++
+ #include <mach/mach.h>
+ 
+ struct macosx_deployment_target {
+@@ -33,3 +36,5 @@ __private_extern__ void get_macosx_deployment_target(
+ 
+ __private_extern__ void put_macosx_deployment_target(
+     char *target);
++
++#endif /* _STUFF_MACOSX_DEPLOYMENT_TARGET_H_ */
+diff --git a/ld/Makefile.linux b/ld/Makefile.linux
+new file mode 100644
+index 0000000..9054d6c
+--- /dev/null
++++ b/ld/Makefile.linux
+@@ -0,0 +1,47 @@
++NULL =
++
++CFILES = \
++	4byte_literals.c \
++	8byte_literals.c \
++	arm_reloc.c \
++	coalesced_sections.c \
++	cstring_literals.c \
++	debugcompunit.c \
++	debugline.c \
++	dylibs.c \
++	fvmlibs.c \
++	generic_reloc.c \
++	hppa_reloc.c \
++	i860_reloc.c \
++	indirect_sections.c \
++	layout.c \
++	ld.c \
++	literal_pointers.c \
++	m88k_reloc.c \
++	mod_sections.c \
++	objects.c \
++	pass1.c \
++	pass2.c \
++	ppc_reloc.c \
++	rld.c \
++	sections.c \
++	sets.c \
++	sparc_reloc.c \
++	specs.c \
++	symbols.c \
++	uuid.c \
++	$(NULL)
++COBJS = $(CFILES:.c=.o)
++
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++
++all: ld_classic
++
++ld_classic: $(COBJS)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++.c.o:
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++clean:
++	-rm -rf ld_classic $(COBJS)
+diff --git a/ld/ld.c b/ld/ld.c
+index eae0160..7a88715 100644
+--- a/ld/ld.c
++++ b/ld/ld.c
+@@ -58,8 +58,6 @@
+ #include <mach/mach_init.h>
+ #if defined(__OPENSTEP__) || defined(__GONZO_BUNSEN_BEAKER__)
+ #include <servers/netname.h>
+-#else
+-#include <servers/bootstrap.h>
+ #endif
+ #else /* defined(KLD) && defined(__STATIC__) */
+ #include <mach/mach.h>
+diff --git a/ld/ld.h b/ld/ld.h
+index 2a54fe9..0c8ed7b 100644
+--- a/ld/ld.h
++++ b/ld/ld.h
+@@ -24,6 +24,9 @@
+ #define __private_extern__ __declspec(private_extern)
+ #endif
+ 
++#include "stuff/arch.h"
++#include "stuff/macosx_deployment_target.h"
++
+ /*
+  * Global types, variables and routines declared in the file ld.c.
+  *
+diff --git a/ld/pass1.c b/ld/pass1.c
+index 408f766..4841ef6 100644
+--- a/ld/pass1.c
++++ b/ld/pass1.c
+@@ -58,6 +58,7 @@
+ #include <mach-o/ranlib.h>
+ #include "stuff/arch.h"
+ #include "stuff/best_arch.h"
++#include "stuff/emulated.h"
+ #include "stuff/guess_short_name.h"
+ #include "stuff/macosx_deployment_target.h"
+ 
+diff --git a/ld/symbols.c b/ld/symbols.c
+index 7981e95..71ab5bc 100644
+--- a/ld/symbols.c
++++ b/ld/symbols.c
+@@ -4568,8 +4568,8 @@ mark_globals_live(void)
+ 		    if(only_referenced_dynamically == TRUE)
+ 			continue;
+ 		}
+-#ifdef DEBUG
+ mark_it_live:
++#ifdef DEBUG
+ 		if(((debug & (1 << 25)) || (debug & (1 << 26)))){
+ 		    print("** In mark_globals_live() ");
+ 		    if(merged_symbol->nlist.n_desc & N_NO_DEAD_STRIP)
+diff --git a/ld/uuid.c b/ld/uuid.c
+index cffaf35..718ad78 100644
+--- a/ld/uuid.c
++++ b/ld/uuid.c
+@@ -26,11 +26,16 @@
+ 
+ #include <stdint.h>
+ #include <string.h>
++#include <stdarg.h>
++#include <mach/mach.h>
++#include "ld.h"
++#include <mach-o/loader.h>
+ #if !(defined(KLD) && defined(__STATIC__))
+ #include <uuid/uuid.h>
+ #else
+ #include <mach-o/loader.h>
+ #endif /* !(defined(KLD) && defined(__STATIC__)) */
++#include <stdlib.h>
+ 
+ /*
+  * uuid() is called to set the uuid[] bytes for the uuid load command.
+@@ -40,9 +45,65 @@ void
+ uuid(
+ uint8_t *uuid)
+ {
+-#if defined(KLD) && defined(__STATIC__)
+-    memset(uuid, '\0', sizeof(struct uuid_command));
+-#else 
+-    uuid_generate_random((void *)uuid);
+-#endif 
++    struct uuid_command u;
++#if !(defined(KLD) && defined(__STATIC__))
++    void (*uuid_func)(uint8_t *out);
++    NSSymbol nssymbol;
++    int fd;
++    ssize_t n;
++
++	/*
++	 * We would like to just #include <uuid/uuid.h> and but that header
++	 * file did not exist on system until Mac OS 10.4 .  So instead we
++	 * dynamically lookup uuid_generate_random() and if it is defined we
++	 * call it indirectly.
++	 */
++#if 0
++	if(NSIsSymbolNameDefined("_uuid_generate_random")){
++	    nssymbol = (void *)NSLookupAndBindSymbol("_uuid_generate_random");
++	    uuid_func = NSAddressOfSymbol(nssymbol);
++	    uuid_func(uuid);
++	}
++	/*
++	 * Since we don't have uuid_generate() just read bytes from /dev/urandom
++	 */
++	else
++#else
++        {
++#endif
++	    fd = open("/dev/urandom", O_RDONLY, 0);
++	    if(fd == -1){
++		system_warning("can't open: /dev/urandom to fill in uuid load "
++		    "command (using bytes of zero)");
++		memset(uuid, '\0', sizeof(u.uuid));
++	    }
++	    else{
++		n = read(fd, uuid, sizeof(u.uuid));
++		if(n != sizeof(u.uuid)){
++		    system_warning("can't read bytes from: /dev/urandom to "
++			"fill in uuid load command (using bytes of zero)");
++		    memset(uuid, '\0', sizeof(u.uuid));
++		}
++		(void)close(fd);
++	    }
++	}
++	/*
++	 * For consistency, it would be better to create an enum bool in ld.c,
++	 * like we do for the other significant environment variables.
++	 * Unfortunately, the dyld bool definitions override the stuff/bool.h
++	 * definitions, prohibiting us from doing that here.  Since this is
++	 * the only place where we need to know the setting, we'll just read
++	 * it here.
++	 */
++	if((getenv("LD_TRACE_UUID") != NULL) ||
++	   (getenv("RC_TRACE_UUID") != NULL)){
++	    unsigned int pos;
++	    ld_trace("[Logging for XBS] Binary `%s' has UUID 0x", outputfile);
++	    for (pos = 0; pos < sizeof(u.uuid); pos++)
++	      ld_trace("%02x", uuid[pos]);
++	    ld_trace("\n");
++	}
++#else /* defined(KLD) && defined(__STATIC__) */
++	memset(uuid, '\0', sizeof(u.uuid));
++#endif /* !(defined(KLD) && defined(__STATIC__)) */
+ }
+diff --git a/libstuff/Makefile.linux b/libstuff/Makefile.linux
+new file mode 100644
+index 0000000..179404e
+--- /dev/null
++++ b/libstuff/Makefile.linux
+@@ -0,0 +1,57 @@
++NULL =
++
++CFILES = \
++	SymLoc.c \
++	allocate.c \
++	apple_version.c \
++	arch.c \
++	arch_usage.c \
++	best_arch.c \
++	breakout.c \
++	bytesex.c \
++	checkout.c \
++	coff_bytesex.c \
++	crc32.c \
++	dylib_roots.c \
++	dylib_table.c \
++	emulated.c \
++	errors.c \
++	execute.c \
++	fatal_arch.c \
++	fatals.c \
++	get_arch_from_host.c \
++	get_toc_byte_sex.c \
++	guess_short_name.c \
++	hash_string.c \
++	hppa.c \
++	lto.c \
++	macosx_deployment_target.c \
++	ofile.c \
++	ofile_error.c \
++	ofile_get_word.c \
++	print.c \
++	reloc.c \
++	rnd.c \
++	seg_addr_table.c \
++	set_arch_flag_name.c \
++	swap_headers.c \
++	symbol_list.c \
++	unix_standard_mode.c \
++	version_number.c \
++	vm_flush_cache.c \
++	writeout.c \
++	$(NULL)
++COBJS = $(CFILES:.c=.o)
++
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -DEMULATED_HOST_CPU_TYPE=CPU_TYPE_I386 -DEMULATED_HOST_CPU_SUBTYPE='CPU_SUBTYPE_INTEL(12, 1)' -I../include -I../../usr_include
++
++all: libstuff.a
++
++libstuff.a: $(COBJS)
++	$(AR) cr $@ $^
++
++.c.o:
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++clean:
++	-rm -rf libstuff.a $(COBJS)
+diff --git a/libstuff/apple_version.c b/libstuff/apple_version.c
+new file mode 100644
+index 0000000..d778ba4
+--- /dev/null
++++ b/libstuff/apple_version.c
+@@ -0,0 +1 @@
++const char apple_version[]= "cctools-698.1";
+diff --git a/libstuff/emulated.c b/libstuff/emulated.c
+new file mode 100644
+index 0000000..4af666b
+--- /dev/null
++++ b/libstuff/emulated.c
+@@ -0,0 +1,152 @@
++#include <mach/mach.h>
++#include <mach/mach_error.h>
++#include <mach/machine.h>
++#include <mach-o/dyld.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <sys/mman.h>
++#include <errno.h>
++
++
++
++char            *mach_error_string(mach_error_t error_value)
++{
++  return "Unknown mach error";
++}
++
++mach_port_t mach_host_self(void)
++{
++  return 0;
++}
++
++kern_return_t host_info
++(
++ host_t host,
++ host_flavor_t flavor,
++ host_info_t host_info_out,
++ mach_msg_type_number_t *host_info_outCnt
++ )
++{
++  if(flavor == HOST_BASIC_INFO) {
++    host_basic_info_t      basic_info;
++
++    basic_info = (host_basic_info_t) host_info_out;
++    memset(basic_info, 0x00, sizeof(*basic_info));
++    basic_info->cpu_type = EMULATED_HOST_CPU_TYPE;
++    basic_info->cpu_subtype = EMULATED_HOST_CPU_SUBTYPE;
++  }
++
++  return 0;
++}
++
++mach_port_t     mach_task_self_ = 0;
++
++kern_return_t mach_port_deallocate
++(
++ ipc_space_t task,
++ mach_port_name_t name
++ )
++{
++  return 0;
++}
++
++kern_return_t vm_allocate
++(
++ vm_map_t target_task,
++ vm_address_t *address,
++ vm_size_t size,
++        int flags
++ )
++{
++
++  vm_address_t addr = 0;
++
++  addr = (vm_address_t)calloc(size, sizeof(char));
++  if(addr == 0)
++    return 1;
++
++  *address = addr;
++
++  return 0;
++}
++
++kern_return_t vm_deallocate
++(
++ vm_map_t target_task,
++ vm_address_t address,
++        vm_size_t size
++ )
++{
++  // Leak for now.  This is bad, but the tools that use this won't be
++  // long-lived.
++  // TODO(mark): Fix.  The problem is that vm_allocate/vm_deallocate have
++  // different semantics than malloc/free.  vm_deallocate frees things
++  // on a page-by-page basis where the pages may be a subset or a superset
++  // of a region obtained by any single vm_allocate call, where free frees
++  // entire blocks obtained from malloc.
++  // free((void *)address);
++
++  return 0;
++}
++
++kern_return_t vm_msync
++(
++ vm_map_t target_task,
++ vm_address_t address,
++ vm_size_t size,
++        vm_sync_t sync_flags
++ )
++{
++  // TODO(mark): Call msync?
++
++  return 0;
++}
++
++kern_return_t map_fd(
++                     int fd,
++                     vm_offset_t offset,
++                     vm_offset_t *va,
++                     boolean_t findspace,
++                     vm_size_t size)
++{
++
++  void *addr = NULL;
++
++  addr = mmap(0, size, PROT_READ|PROT_WRITE,
++	      MAP_PRIVATE|MAP_FILE, fd, offset);
++
++  if(addr == (void *)-1) {
++    return 1;
++  }
++
++  *va = (vm_offset_t)addr;
++
++  return 0;
++}
++
++#ifndef HAVE_QSORT_R
++void *_qsort_thunk = NULL;
++int (*_qsort_saved_func)(void *, const void *, const void *) = NULL;
++
++static int _qsort_comparator(const void *a, const void *b);
++
++static int _qsort_comparator(const void *a, const void *b)
++{
++  return _qsort_saved_func(_qsort_thunk, a, b);
++}
++
++void
++qsort_r(void *base, size_t nmemb, size_t size, void *thunk,
++	int (*compar)(void *, const void *, const void *))
++{
++  _qsort_thunk = thunk;
++  _qsort_saved_func = compar;
++
++  qsort(base, nmemb, size, _qsort_comparator);
++}
++
++#endif
++
++vm_size_t       vm_page_size = 4096; // hardcoded to match expectations of darwin
+diff --git a/libstuff/execute.c b/libstuff/execute.c
+index cbc58bb..3455eab 100644
+--- a/libstuff/execute.c
++++ b/libstuff/execute.c
+@@ -154,13 +154,8 @@ char *str)
+ 	/*
+ 	 * Construct the prefix to the program running.
+ 	 */
+-	bufsize = MAXPATHLEN;
+ 	p = buf;
+-	i = _NSGetExecutablePath(p, &bufsize);
+-	if(i == -1){
+-	    p = allocate(bufsize);
+-	    _NSGetExecutablePath(p, &bufsize);
+-	}
++	readlink("/proc/self/exe", buf, sizeof(buf));
+ 	prefix = realpath(p, resolved_name);
+ 	p = rindex(prefix, '/');
+ 	if(p != NULL)
+diff --git a/misc/Makefile.linux b/misc/Makefile.linux
+new file mode 100644
+index 0000000..0d17c2b
+--- /dev/null
++++ b/misc/Makefile.linux
+@@ -0,0 +1,104 @@
++CFILES_codesign_allocate = codesign_allocate.c
++COBJS_codesign_allocate = $(CFILES_codesign_allocate:.c=.o)
++
++CFILES_install_name_tool = install_name_tool.c
++COBJS_install_name_tool = $(CFILES_install_name_tool:.c=.o)
++
++CFILES_libtool = libtool.c
++COBJS_libtool = $(CFILES_libtool:.c=.o)
++
++CFILES_lipo = lipo.c
++COBJS_lipo = $(CFILES_lipo:.c=.o)
++
++CFILES_nm = nm.c
++COBJS_nm = $(CFILES_nm:.c=.o)
++
++CFILES_nmedit = strip.c
++COBJS_nmedit = nmedit.o
++
++CFILES_pagestuff = pagestuff.c
++COBJS_pagestuff = $(CFILES_pagestuff:.c=.o)
++
++CFILES_segedit = segedit.c
++COBJS_segedit = $(CFILES_segedit:.c=.o)
++
++CFILES_size = size.c
++COBJS_size = $(CFILES_size:.c=.o)
++
++CFILES_strings = strings.c
++COBJS_strings = $(CFILES_strings:.c=.o)
++
++CFILES_strip = strip.c
++COBJS_strip = $(CFILES_strip:.c=.o)
++
++XCFLAGS = -fno-builtin-round -fno-builtin-trunc -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++
++all: codesign_allocate \
++     install_name_tool \
++     libtool \
++     lipo \
++     nm \
++     nmedit \
++     pagestuff \
++     ranlib \
++     segedit \
++     size \
++     strings \
++     strip
++
++codesign_allocate: $(COBJS_codesign_allocate)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++install_name_tool: $(COBJS_install_name_tool)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++libtool: $(COBJS_libtool)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++lipo: $(COBJS_lipo)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++nm: $(COBJS_nm)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++nmedit: $(COBJS_nmedit)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++pagestuff: $(COBJS_pagestuff)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++ranlib: nmedit
++	ln -s $< $@
++
++segedit: $(COBJS_segedit)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++size: $(COBJS_size)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++strings: $(COBJS_strings)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++strip: $(COBJS_strip)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++.c.o:
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++nmedit.o: strip.c
++	$(CC) $(CFLAGS) $(XCFLAGS) -DNMEDIT -c -o $@ $<
++
++clean:
++	-rm -rf \
++	  codesign_allocate $(COBJS_codesign_allocate) \
++	  install_name_tool $(COBJS_install_name_tool) \
++	  libtool $(COBJS_libtool) \
++	  lipo $(COBJS_lipo) \
++	  nm $(COBJS_nm) \
++	  nmedit $(COBJS_nmedit) \
++	  pagestuff $(COBJS_pagestuff) \
++	  ranlib \
++	  segedit $(COBJS_segedit) \
++	  size $(COBJS_size) \
++	  strings $(COBJS_strings) \
++	  strip $(COBJS_strip)
+diff --git a/misc/libtool.c b/misc/libtool.c
+index 71835ae..c9a18c1 100644
+--- a/misc/libtool.c
++++ b/misc/libtool.c
+@@ -55,8 +55,6 @@
+ #include <mach/mach_init.h>
+ #if defined(__OPENSTEP__) || defined(__GONZO_BUNSEN_BEAKER__)
+ #include <servers/netname.h>
+-#else
+-#include <servers/bootstrap.h>
+ #endif
+ 
+ /*
+diff --git a/misc/strip.c b/misc/strip.c
+index f7c3e9f..f34e4b6 100644
+--- a/misc/strip.c
++++ b/misc/strip.c
+@@ -701,7 +701,7 @@ enum bool all_archs)
+ 		 */
+ 		free(output_file);
+ 		output_file = makestr("strip.XXXXXX", NULL);
+-		output_file = mktemp(output_file);
++		close(mkstemp(output_file));
+ 	    }
+ #endif /* NMEDIT */
+ 	    writeout(archs, narchs, output_file, stat_buf.st_mode & 0777,
+@@ -3796,9 +3796,9 @@ struct object *object)
+ 	 * of this arch's object file.
+ 	 */
+ 	input_file = makestr("/tmp/strip.XXXXXX", NULL);
+-	input_file = mktemp(input_file);
++	close(mkstemp(input_file));
+ 
+-	if((fd = open(input_file, O_WRONLY|O_CREAT, 0600)) < 0)
++	if((fd = open(input_file, O_WRONLY, 0600)) < 0)
+ 	    system_fatal("can't open temporary file: %s", input_file);
+ 
+ 	if(write(fd, object->object_addr, object->object_size) !=
+@@ -3812,7 +3812,7 @@ struct object *object)
+ 	 * Create a temporary name for the output file of the ld -r
+ 	 */
+ 	output_file = makestr("/tmp/strip.XXXXXX", NULL);
+-	output_file = mktemp(output_file);
++	close(mkstemp(output_file));
+ 
+ 	/*
+ 	 * Create the ld -r command line and execute it.
+diff --git a/otool/Makefile.linux b/otool/Makefile.linux
+new file mode 100644
+index 0000000..82d11b3
+--- /dev/null
++++ b/otool/Makefile.linux
+@@ -0,0 +1,39 @@
++NULL =
++
++CFILES = \
++	arm_disasm.c \
++	coff_print.c \
++	hppa_disasm.c \
++	i386_disasm.c \
++	i860_disasm.c \
++	m68k_disasm.c \
++	m88k_disasm.c \
++	main.c \
++	notify.c \
++	ofile_print.c \
++	ppc_disasm.c \
++	print_objc2_32bit.c \
++	print_objc2_64bit.c \
++	sparc_disasm.c \
++	$(NULL)
++COBJS = $(CFILES:.c=.o)
++
++OBJCFILES = print_objc.c
++OBJCOBJS = $(OBJCFILES:.c=.o)
++
++XCFLAGS = -fno-builtin-round -D__LITTLE_ENDIAN__ -D__private_extern__='__attribute__((visibility("hidden")))' -I../include -I../../usr_include
++
++all: otool
++
++# Don't build print_objc.c into otool, it's wants the Apple Obj-C runtime.
++otool: $(COBJS)
++	$(CC) -o $@ $^ -L../libstuff -lstuff
++
++$(COBJS): %.o: %.c
++	$(CC) $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++$(OBJCOBJS): %.o: %.c
++	$(CC) -x objective-c $(CFLAGS) $(XCFLAGS) -c -o $@ $<
++
++clean:
++	-rm -rf otool $(COBJS) $(OBJCOBJS)
+diff --git a/otool/main.c b/otool/main.c
+index d261fce..d4bdaf1 100644
+--- a/otool/main.c
++++ b/otool/main.c
+@@ -1155,9 +1155,13 @@ void *cookie) /* cookie is not used */
+ 		S_ATTR_SOME_INSTRUCTIONS){
+ 	    if(strcmp(segname, SEG_OBJC) == 0 &&
+ 	       strcmp(sectname, "__protocol") == 0 && vflag == TRUE){
++#ifdef HAVE_OBJC_OBJC_RUNTIME_H
+ 		print_objc_protocol_section(ofile->load_commands, mh_ncmds,
+ 		   mh_sizeofcmds, ofile->object_byte_sex, ofile->object_addr,
+ 		   ofile->object_size, vflag);
++#else
++		printf("Objective-C not supported\n");
++#endif
+ 	    }
+ 	    else if(strcmp(segname, SEG_OBJC) == 0 &&
+ 	            (strcmp(sectname, "__string_object") == 0 ||
+@@ -1171,16 +1175,24 @@ void *cookie) /* cookie is not used */
+ 			strings, strings_size, sorted_symbols, nsorted_symbols,
+ 			vflag);
+ 		else
++#ifdef HAVE_OBJC_OBJC_RUNTIME_H
+ 		    print_objc_string_object_section(sectname,
+ 			ofile->load_commands, mh_ncmds, mh_sizeofcmds,
+ 			ofile->object_byte_sex, ofile->object_addr,
+ 			ofile->object_size, vflag);
++#else
++		    printf("Objective-C not supported.\n");
++#endif
+ 	    }
+ 	    else if(strcmp(segname, SEG_OBJC) == 0 &&
+ 	       strcmp(sectname, "__runtime_setup") == 0 && vflag == TRUE){
++#ifdef HAVE_OBJC_OBJC_RUNTIME_H
+ 		print_objc_runtime_setup_section(ofile->load_commands, mh_ncmds,
+ 		   mh_sizeofcmds, ofile->object_byte_sex, ofile->object_addr,
+ 		   ofile->object_size, vflag);
++#else
++		printf("Objective-C not supported\n");
++#endif
+ 	    }
+ #ifdef EFI_SUPPORT
+ 	    else if(strcmp(segname, "__RELOC") == 0 &&
+diff --git a/otool/notify.c b/otool/notify.c
+index 85070dd..5369e96 100644
+--- a/otool/notify.c
++++ b/otool/notify.c
+@@ -29,7 +29,7 @@
+  * @APPLE_LICENSE_HEADER_END@
+  */
+ #ifndef __DYNAMIC__
+-#include <notify.h>
++#include "notify.h"
+ 
+ uint32_t notify_post(const char *name)
+ {
+diff --git a/otool/notify.h b/otool/notify.h
+index 8176570..a53b329 100644
+--- a/otool/notify.h
++++ b/otool/notify.h
+@@ -216,4 +216,4 @@ uint32_t notify_cancel(int token);
+ 
+ __END_DECLS
+ 
+-#endif __NOTIFICATION_H__
++#endif /* __NOTIFICATION_H__ */
+-- 
+1.7.1
+

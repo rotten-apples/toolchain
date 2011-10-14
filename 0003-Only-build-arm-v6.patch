@@ -1,0 +1,352 @@
+From be355ba21f85d155953a89719f48cfc924c88062 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sat, 8 Oct 2011 10:37:31 +0200
+Subject: [PATCH 3/3] Only build arm v6
+
+Since prebuild binaries are v6-only.
+---
+ Makefile.in                       |   40 ++++++++++++++++++------------------
+ Makefile.tpl                      |    4 +-
+ config-ml.in                      |    6 ++--
+ driverdriver.c                    |    2 +-
+ gcc/Makefile.in                   |    2 +-
+ gcc/config/arm/arm.c              |    2 +-
+ gcc/config/arm/t-slibgcc-iphoneos |    2 +-
+ gcc/config/t-slibgcc-darwin       |    6 ++--
+ libgomp/testsuite/lib/libgomp.exp |    2 +-
+ 9 files changed, 33 insertions(+), 33 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 422fcd7..4da2cf4 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -33541,7 +33541,7 @@ configure-target-libstdc++-v3:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libstdc++-v3..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libstdc++-v3 ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libstdc++-v3/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libstdc++-v3/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libstdc++-v3/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libstdc++-v3/multilib.tmp $(TARGET_SUBDIR)/libstdc++-v3/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libstdc++-v3/multilib.tmp; \
+@@ -33954,7 +33954,7 @@ configure-target-libmudflap:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libmudflap..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmudflap/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libmudflap/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libmudflap/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libmudflap/multilib.tmp $(TARGET_SUBDIR)/libmudflap/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libmudflap/multilib.tmp; \
+@@ -34367,7 +34367,7 @@ configure-target-libssp:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libssp..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libssp ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libssp/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libssp/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libssp/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libssp/multilib.tmp $(TARGET_SUBDIR)/libssp/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libssp/multilib.tmp; \
+@@ -34780,7 +34780,7 @@ configure-target-newlib:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for newlib..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/newlib/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/newlib/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/newlib/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/newlib/multilib.tmp $(TARGET_SUBDIR)/newlib/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/newlib/multilib.tmp; \
+@@ -35193,7 +35193,7 @@ configure-target-libgfortran:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libgfortran..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgfortran ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgfortran/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libgfortran/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libgfortran/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libgfortran/multilib.tmp $(TARGET_SUBDIR)/libgfortran/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libgfortran/multilib.tmp; \
+@@ -35606,7 +35606,7 @@ configure-target-libobjc:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libobjc..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libobjc ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libobjc/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libobjc/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libobjc/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libobjc/multilib.tmp $(TARGET_SUBDIR)/libobjc/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libobjc/multilib.tmp; \
+@@ -36019,7 +36019,7 @@ configure-target-libtermcap:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libtermcap..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libtermcap ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libtermcap/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libtermcap/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libtermcap/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libtermcap/multilib.tmp $(TARGET_SUBDIR)/libtermcap/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libtermcap/multilib.tmp; \
+@@ -36367,7 +36367,7 @@ configure-target-winsup:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for winsup..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/winsup ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/winsup/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/winsup/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/winsup/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/winsup/multilib.tmp $(TARGET_SUBDIR)/winsup/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/winsup/multilib.tmp; \
+@@ -36780,7 +36780,7 @@ configure-target-libgloss:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libgloss..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgloss ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgloss/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libgloss/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libgloss/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libgloss/multilib.tmp $(TARGET_SUBDIR)/libgloss/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libgloss/multilib.tmp; \
+@@ -37188,7 +37188,7 @@ configure-target-libiberty:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libiberty..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libiberty/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libiberty/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libiberty/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libiberty/multilib.tmp $(TARGET_SUBDIR)/libiberty/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libiberty/multilib.tmp; \
+@@ -37601,7 +37601,7 @@ configure-target-gperf:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for gperf..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/gperf ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/gperf/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/gperf/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/gperf/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/gperf/multilib.tmp $(TARGET_SUBDIR)/gperf/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/gperf/multilib.tmp; \
+@@ -38014,7 +38014,7 @@ configure-target-examples:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for examples..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/examples ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/examples/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/examples/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/examples/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/examples/multilib.tmp $(TARGET_SUBDIR)/examples/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/examples/multilib.tmp; \
+@@ -38417,7 +38417,7 @@ configure-target-libffi:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libffi..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+@@ -38830,7 +38830,7 @@ configure-target-libjava:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libjava..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libjava/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libjava/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libjava/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libjava/multilib.tmp $(TARGET_SUBDIR)/libjava/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libjava/multilib.tmp; \
+@@ -39243,7 +39243,7 @@ configure-target-zlib:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for zlib..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/zlib/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/zlib/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/zlib/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/zlib/multilib.tmp $(TARGET_SUBDIR)/zlib/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/zlib/multilib.tmp; \
+@@ -39656,7 +39656,7 @@ configure-target-boehm-gc:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for boehm-gc..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/boehm-gc/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/boehm-gc/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/boehm-gc/multilib.tmp; \
+@@ -40069,7 +40069,7 @@ configure-target-qthreads:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for qthreads..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/qthreads ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/qthreads/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/qthreads/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/qthreads/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/qthreads/multilib.tmp $(TARGET_SUBDIR)/qthreads/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/qthreads/multilib.tmp; \
+@@ -40482,7 +40482,7 @@ configure-target-rda:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for rda..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/rda ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/rda/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/rda/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/rda/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/rda/multilib.tmp $(TARGET_SUBDIR)/rda/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/rda/multilib.tmp; \
+@@ -40895,7 +40895,7 @@ configure-target-libada:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libada..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libada ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libada/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libada/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libada/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libada/multilib.tmp $(TARGET_SUBDIR)/libada/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libada/multilib.tmp; \
+@@ -41308,7 +41308,7 @@ configure-target-libgomp:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	echo "Checking multilib configuration for libgomp..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+ 	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+ 	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+ 	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+diff --git a/Makefile.tpl b/Makefile.tpl
+index 6ce435f..884496d 100644
+--- a/Makefile.tpl
++++ b/Makefile.tpl
+@@ -755,7 +755,7 @@ configure-[+prefix+][+module+]: [+ IF bootstrap +][+ ELSE +]
+ 	[+ IF check_multilibs
+ 	+]echo "Checking multilib configuration for [+module+]..."; \
+ 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
+-	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
+ 	if test -r [+subdir+]/[+module+]/multilib.out; then \
+ 	  if cmp -s [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; then \
+ 	    rm -f [+subdir+]/[+module+]/multilib.tmp; \
+@@ -797,7 +797,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	[+ IF check_multilibs
+ 	+]echo "Checking multilib configuration for [+module+]..."; \
+-	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
++	$(CC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
+ 	if test -r [+subdir+]/[+module+]/multilib.out; then \
+ 	  if cmp -s [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; then \
+ 	    rm -f [+subdir+]/[+module+]/multilib.tmp; \
+diff --git a/config-ml.in b/config-ml.in
+index 4082fe4..dbfa9b9 100644
+--- a/config-ml.in
++++ b/config-ml.in
+@@ -197,7 +197,7 @@ fi
+ if [ "${ml_toplevel_p}" = yes ]; then
+ 
+ multidirs=
+-for i in `${CC-gcc} --print-multi-lib 2>/dev/null`; do
++for i in `${CC-gcc} --print-multi-lib |grep -v 'v[57]' 2>/dev/null`; do
+   dir=`echo $i | sed -e 's/;.*$//'`
+   if [ "${dir}" = "." ]; then
+     true
+@@ -537,7 +537,7 @@ multi-do:
+ 	  srcrootpre=`cd $(srcdir); ${PWD_COMMAND}`/; export srcrootpre; \
+ 	  lib=`echo $${rootpre} | sed -e 's,^.*/\([^/][^/]*\)/$$,\1,'`; \
+ 	  compiler="$(CC)"; \
+-	  for i in `$${compiler} --print-multi-lib 2>/dev/null`; do \
++	  for i in `$${compiler} --print-multi-lib |grep -v 'v[57]' 2>/dev/null`; do \
+ 	    dir=`echo $$i | sed -e 's/;.*$$//'`; \
+ 	    if [ "$${dir}" = "." ]; then \
+ 	      true; \
+@@ -774,7 +774,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
+     fi
+ 
+     # find compiler flag corresponding to ${ml_dir}
+-    for i in `${CC-gcc} --print-multi-lib 2>/dev/null`; do
++    for i in `${CC-gcc} --print-multi-lib |grep -v 'v[57]' 2>/dev/null`; do
+       dir=`echo $i | sed -e 's/;.*$//'`
+       if [ "${dir}" = "${ml_dir}" ]; then
+         flags=`echo $i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`
+diff --git a/driverdriver.c b/driverdriver.c
+index 0f71c41..c2e05bd 100644
+--- a/driverdriver.c
++++ b/driverdriver.c
+@@ -825,7 +825,7 @@ add_arch_options (int index, const char **current_argv, int arch_index)
+   else if (!strcmp (arches[index], "armv4t"))
+     current_argv[arch_index] = "-march=armv4t";
+   else if (!strcmp (arches[index], "armv5"))
+-    current_argv[arch_index] = "-march=armv5tej";
++    current_argv[arch_index] = "-march=armv6k";
+   else if (!strcmp (arches[index], "xscale"))
+     current_argv[arch_index] = "-march=xscale";
+   else if (!strcmp (arches[index], "armv6"))
+diff --git a/gcc/Makefile.in b/gcc/Makefile.in
+index 8fe7ea1..3a1ea95 100644
+--- a/gcc/Makefile.in
++++ b/gcc/Makefile.in
+@@ -1471,7 +1471,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
+ 	D128PBIT='$(D128PBIT)' \
+ 	D128PBIT_FUNCS='$(D128PBIT_FUNCS)' \
+ 	APPLE_LOCAL='APPLE LOCAL libcc_kext' \
+-	MULTILIBS="`$(GCC_FOR_TARGET) --print-multi-lib` static;@static@fno-pic kext;@Dmalloc=kern_os_malloc@Dfree=kern_os_free@DLIBCC_KEXT@static@fno-pic@fno-exceptions@fno-non-call-exceptions$(KEXT_EXTRA_FLAGS) $(if $(findstring i686,$(target)),kext64;@mkernel@m64@Dmalloc=kern_os_malloc@Dfree=kern_os_free@DLIBCC_KEXT$(KEXT_EXTRA_FLAGS))" \
++	MULTILIBS="`$(GCC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]'` static;@static@fno-pic kext;@Dmalloc=kern_os_malloc@Dfree=kern_os_free@DLIBCC_KEXT@static@fno-pic@fno-exceptions@fno-non-call-exceptions$(KEXT_EXTRA_FLAGS) $(if $(findstring i686,$(target)),kext64;@mkernel@m64@Dmalloc=kern_os_malloc@Dfree=kern_os_free@DLIBCC_KEXT$(KEXT_EXTRA_FLAGS))" \
+ 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
+ 	SHLIB_LINK='$(SHLIB_LINK)' \
+ 	SHLIB_INSTALL='$(SHLIB_INSTALL)' \
+diff --git a/gcc/config/arm/arm.c b/gcc/config/arm/arm.c
+index d431ecb..36b8646 100644
+--- a/gcc/config/arm/arm.c
++++ b/gcc/config/arm/arm.c
+@@ -24,7 +24,7 @@
+ 
+ /* APPLE LOCAL begin 6902792 Q register clobbers in inline asm */
+ #include <stdlib.h>
+-#include <ctype.h>
++//#include <ctype.h>
+ /* APPLE LOCAL end 6902792 Q register clobbers in inline asm */
+ #include "config.h"
+ #include "system.h"
+diff --git a/gcc/config/arm/t-slibgcc-iphoneos b/gcc/config/arm/t-slibgcc-iphoneos
+index 9bb6c24..87b4f64 100644
+--- a/gcc/config/arm/t-slibgcc-iphoneos
++++ b/gcc/config/arm/t-slibgcc-iphoneos
+@@ -44,7 +44,7 @@ ASM_HIDDEN_OP = .private_extern
+ libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT): stmp-multilib
+ 	# When building multilibbed target libraries, all the required
+ 	# libraries are expected to exist in the multilib directory.
+-	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
++	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' \
+ 		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+ 	if [ -n "$$MLIBS" ] ; then \
+ 	  for mlib in '' $$MLIBS ; do \
+diff --git a/gcc/config/t-slibgcc-darwin b/gcc/config/t-slibgcc-darwin
+index 90491df..1941883 100644
+--- a/gcc/config/t-slibgcc-darwin
++++ b/gcc/config/t-slibgcc-darwin
+@@ -49,13 +49,13 @@ ASM_HIDDEN_OP = .private_extern
+ libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver stmp-multilib
+ 	# When building multilibbed target libraries, all the required
+ 	# libraries are expected to exist in the multilib directory.
+-	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
++	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' \
+ 		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+ 	for mlib in $$MLIBS ; do \
+ 	  rm -f $${mlib}/$@ || exit 1 ; \
+ 	  $(LN_S) ../$@ $${mlib}/$@ || exit 1 ; \
+ 	done
+-	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
++	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' \
+ 		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+ 	for mlib in '' $$MLIBS ; do \
+ 	  $(STRIP_FOR_TARGET) -o $(@)_T$${mlib} \
+@@ -69,7 +69,7 @@ libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT): stmp-multilib libgcc_s.10.4.dylib \
+ 	libgcc_s.10.5.dylib
+ 	# When building multilibbed target libraries, all the required
+ 	# libraries are expected to exist in the multilib directory.
+-	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
++	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib |grep -v 'v[57]' \
+ 		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+ 	for mlib in '' $$MLIBS ; do \
+ 	  cp ./$${mlib}/libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT).tmp \
+diff --git a/libgomp/testsuite/lib/libgomp.exp b/libgomp/testsuite/lib/libgomp.exp
+index 4140e75..a095884 100644
+--- a/libgomp/testsuite/lib/libgomp.exp
++++ b/libgomp/testsuite/lib/libgomp.exp
+@@ -100,7 +100,7 @@ proc libgomp_init { args } {
+ 	set compiler [lindex $GCC_UNDER_TEST 0]
+ 
+ 	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+-	  foreach i "[exec $compiler --print-multi-lib]" {
++	  foreach i "[exec $compiler --print-multi-lib |grep -v 'v[57]']" {
+ 	    set mldir ""
+ 	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
+ 	    set mldir [string trimright $mldir "\;@"]
+-- 
+1.7.4.1
+

@@ -1,0 +1,24 @@
+From b53da17e3d3f58c4278146a3068af2f20fc8d686 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Tue, 4 Oct 2011 23:23:07 +0200
+Subject: [PATCH 2/3] Add arm
+
+---
+ driverdriver.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/driverdriver.c b/driverdriver.c
+index c39719b..0f71c41 100644
+--- a/driverdriver.c
++++ b/driverdriver.c
+@@ -254,6 +254,7 @@ get_arch_name (const char *name)
+ #else
+   /* Architectures from Mac "man 3 arch" that we're willing to handle. */
+   const char* known_archs[] = {
++    "arm",
+     "i386",  /* The first item is the default to use when none is specified. */
+     "x86_64",
+     "ppc",
+-- 
+1.7.4.1
+

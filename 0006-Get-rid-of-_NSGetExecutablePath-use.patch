@@ -1,0 +1,40 @@
+From 49e5c621a5754c6b47fc1892b24e90cf381bca73 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sun, 2 Oct 2011 22:35:31 +0200
+Subject: [PATCH 6/8] Get rid of _NSGetExecutablePath use
+
+---
+ src/ld/Options.cpp |   18 +-----------------
+ 1 files changed, 1 insertions(+), 17 deletions(-)
+
+diff --git a/src/ld/Options.cpp b/src/ld/Options.cpp
+index 8f25585..83fbde3 100644
+--- a/src/ld/Options.cpp
++++ b/src/ld/Options.cpp
+@@ -3682,22 +3682,6 @@ void Options::checkForClassic(int argc, const char* argv[])
+ 
+ void Options::gotoClassicLinker(int argc, const char* argv[])
+ {
+-	argv[0] = "ld_classic";
+-	char rawPath[PATH_MAX];
+-	char path[PATH_MAX];
+-	uint32_t bufSize = PATH_MAX;
+-	if ( _NSGetExecutablePath(rawPath, &bufSize) != -1 ) {
+-		if ( realpath(rawPath, path) != NULL ) {
+-			char* lastSlash = strrchr(path, '/');
+-			if ( lastSlash != NULL ) {
+-				strcpy(lastSlash+1, "ld_classic");
+-				argv[0] = path;
+-				execvp(path, (char**)argv);
+-			}
+-		}
+-	}
+-	// in case of error in above, try searching for ld_classic via PATH
+-	execvp(argv[0], (char**)argv);
+-	fprintf(stderr, "can't exec ld_classic\n");
++	fprintf(stderr, "won't exec ld_classic\n");
+ 	exit(1);
+ }
+-- 
+1.7.1
+

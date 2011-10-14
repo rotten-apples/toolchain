@@ -1,0 +1,452 @@
+From afcb96be534068ecced365f98d8a8afabfc15106 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sun, 2 Oct 2011 22:30:44 +0200
+Subject: [PATCH 7/8] Publicize fWriters
+
+---
+ src/ld/MachOWriterExecutable.hpp |   86 +++++++++++++++++++-------------------
+ 1 files changed, 43 insertions(+), 43 deletions(-)
+
+diff --git a/src/ld/MachOWriterExecutable.hpp b/src/ld/MachOWriterExecutable.hpp
+index 82dc56f..27d07b3 100644
+--- a/src/ld/MachOWriterExecutable.hpp
++++ b/src/ld/MachOWriterExecutable.hpp
+@@ -621,8 +621,8 @@ public:
+ 	virtual const char*						getSectionName() const	{ return "._zeropage"; }
+ 	virtual ObjectFile::Alignment			getAlignment() const	{ return ObjectFile::Alignment(12); }
+ 	void									setSize(uint64_t size)	{ fSize = size; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	uint64_t								fSize;
+ };
+@@ -657,8 +657,8 @@ public:
+ 	virtual const char*								getSectionName() const		{ return "._mach_header"; }
+ 	virtual uint32_t								getOrdinal() const			{ return 1; }
+ 	virtual void									copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	void									setHeaderInfo(macho_header<typename A::P>& header) const;
+ };
+@@ -673,8 +673,8 @@ public:
+ 	virtual uint64_t						getSize() const 		{ return fWriter.fOptions.customStackSize(); }
+ 	virtual const char*						getSectionName() const	{ return "._stack"; }
+ 	virtual ObjectFile::Alignment			getAlignment() const	{ return ObjectFile::Alignment(12); }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	static bool								stackGrowsDown();
+ };
+@@ -709,8 +709,8 @@ public:
+ 	void									computeSize();
+ 	void									setup();
+ 	unsigned int							commandCount()			{ return fCommandCount; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	unsigned int							fCommandCount;
+ 	uint32_t								fSize;
+@@ -727,8 +727,8 @@ public:
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+ 	unsigned int							commandCount();
+ 			void							needDynamicTable();
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	bool									fNeedsDynamicSymbolTable;
+ 	macho_symtab_command<typename A::P>		fSymbolTable;
+@@ -744,8 +744,8 @@ public:
+ 	virtual const char*						getDisplayName() const { return "thread load commands"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	uint8_t*								fBuffer;
+ 	uint32_t								fBufferSize;
+@@ -759,8 +759,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "dyld load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -772,8 +772,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "segment split info load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -786,8 +786,8 @@ public:
+ 	virtual const char*							getDisplayName() const  { return "allowable_client load command"; }
+ 	virtual uint64_t							getSize() const;
+ 	virtual void								copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P						P;
+ 	const char*							   		clientString;
+ };
+@@ -804,8 +804,8 @@ public:
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+ 	virtual void							optimizeAway() { fOptimizedAway = true; }
+ 			bool							linkedWeak() { return fInfo.options.fWeakImport; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	ExecutableFile::DyLibUsed				fInfo;
+ 	bool									fOptimizedAway;
+@@ -819,8 +819,8 @@ public:
+ 	virtual const char*						getDisplayName() const { return "dylib ID load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -832,8 +832,8 @@ public:
+ 	virtual const char*						getDisplayName() const { return "routines load command"; }
+ 	virtual uint64_t						getSize() const			{ return sizeof(macho_routines_command<typename A::P>); }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -860,8 +860,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "sub-library load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	const char*								fNameStart;
+ 	int										fNameLength;
+@@ -876,8 +876,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "umbrella load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	const char*								fName;
+ };
+@@ -894,8 +894,8 @@ public:
+ 	virtual void						    generate();
+ 			void						    setContent(const uint8_t uuid[16]);
+ 			const uint8_t*					getUUID()				{ return fUUID; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	uuid_t									fUUID;
+ 	bool								    fEmit;
+@@ -911,8 +911,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "rpath load command"; }
+ 	virtual uint64_t						getSize() const;
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	const char*								fPath;
+ };
+@@ -929,8 +929,8 @@ public:
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+ 	void									setStartEncryptionOffset(uint32_t off) { fStartOffset = off; }
+ 	void									setEndEncryptionOffset(uint32_t off) { fEndOffset = off; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	uint32_t								fStartOffset;
+ 	uint32_t								fEndOffset;
+@@ -945,8 +945,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "dyld info load command"; }
+ 	virtual uint64_t						getSize() const { return sizeof(macho_dyld_info_command<typename A::P>); }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -963,8 +963,8 @@ public:
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+ 
+ 	void									setSize(uint64_t newSize);
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	uint64_t								fSize;
+ };
+@@ -981,8 +981,8 @@ public:
+ 	virtual void							copyRawContent(uint8_t buffer[]) const { }
+ 	virtual ObjectFile::Atom::SymbolTableInclusion	getSymbolTableInclusion() const { return ObjectFile::Atom::kSymbolTableNotIn; }
+ 	
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ };
+ 
+ 
+@@ -1007,8 +1007,8 @@ public:
+ 															 ObjectFile::Atom* personalityPointer);
+ 	void											generate();
+ 	
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	struct Info { ObjectFile::Atom* func; ObjectFile::Atom* fde; ObjectFile::Atom* lsda; uint32_t lsdaOffset; ObjectFile::Atom* personalityPointer; uint32_t encoding; };
+ 	struct LSDAEntry { ObjectFile::Atom* func; ObjectFile::Atom* lsda; uint32_t lsdaOffset; };
+@@ -1071,8 +1071,8 @@ public:
+ 	virtual uint64_t						getSize() const;
+ 	virtual const char*						getSectionName() const	{ return "._section_relocs"; }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1086,8 +1086,8 @@ public:
+ protected:
+ 	typedef typename A::P::uint_t			pint_t;
+ 	ByteStream								fEncodedData;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1101,9 +1101,9 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "compressed rebase info"; }
+ 	virtual const char*						getSectionName() const	{ return "._rebase info"; }
+ 	void									encode();
++	using CompressedInfoLinkEditAtom<A>::fWriter;
+ private:
+ 	using CompressedInfoLinkEditAtom<A>::fEncodedData;
+-	using CompressedInfoLinkEditAtom<A>::fWriter;
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+ };
+@@ -1116,8 +1116,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "compressed binding info"; }
+ 	virtual const char*						getSectionName() const	{ return "._binding info"; }
+ 	void									encode();
+-private:
+ 	using CompressedInfoLinkEditAtom<A>::fWriter;
++private:
+ 	using CompressedInfoLinkEditAtom<A>::fEncodedData;
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+@@ -1131,8 +1131,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "compressed weak binding info"; }
+ 	virtual const char*						getSectionName() const	{ return "._wkbinding info"; }
+ 	void									encode();
+-private:
+ 	using CompressedInfoLinkEditAtom<A>::fWriter;
++private:
+ 	using CompressedInfoLinkEditAtom<A>::fEncodedData;
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+@@ -1146,10 +1146,10 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "compressed lazy binding info"; }
+ 	virtual const char*						getSectionName() const	{ return "._lzbinding info"; }
+ 	void									encode();
++	using CompressedInfoLinkEditAtom<A>::fWriter;
+ private:
+ 	std::vector<uint32_t>					fStarts;
+ 	
+-	using CompressedInfoLinkEditAtom<A>::fWriter;
+ 	using CompressedInfoLinkEditAtom<A>::fEncodedData;
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+@@ -1165,8 +1165,8 @@ public:
+ 	virtual const char*						getDisplayName() const	{ return "compressed export info"; }
+ 	virtual const char*						getSectionName() const	{ return "._export info"; }
+ 	void									encode();
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	using CompressedInfoLinkEditAtom<A>::fEncodedData;
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+@@ -1314,8 +1314,8 @@ public:
+ 	virtual uint64_t						getSize() const;
+ 	virtual const char*						getSectionName() const	{ return "._local_relocs"; }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1328,8 +1328,8 @@ public:
+ 	virtual uint64_t						getSize() const;
+ 	virtual const char*						getSectionName() const	{ return "._symbol_table"; }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1342,8 +1342,8 @@ public:
+ 	virtual uint64_t						getSize() const;
+ 	virtual const char*						getSectionName() const	{ return "._extern_relocs"; }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1370,8 +1370,8 @@ public:
+ 	void									add32bitImportLocation(const ObjectFile::Atom* atom, uint32_t offset) { fKind4Locations.push_back(AtomAndOffset(atom, offset)); }
+ 	void									encode();
+ 
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+ 	struct AtomAndOffset { 
+@@ -1401,8 +1401,8 @@ public:
+ 
+ 	std::vector<IndirectEntry>				fTable;
+ 
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ };
+ 
+@@ -1422,8 +1422,8 @@ public:
+ 			uint32_t						getReferencesFileOffset() const;
+ 			uint32_t						getReferencesCount() const;
+ 
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	typedef typename A::P::uint_t			pint_t;
+ 	uint32_t								fModuleNameOffset;
+@@ -1451,8 +1451,8 @@ public:
+ 	int32_t									emptyString()			{ return 1; }
+ 	const char*								stringForIndex(int32_t) const;
+ 
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	enum { kBufferSize = 0x01000000 };
+ 	typedef __gnu_cxx::hash_map<const char*, int32_t, __gnu_cxx::hash<const char*>, CStringEquals> StringToOffset;
+@@ -1476,8 +1476,8 @@ public:
+ 	virtual ObjectFile::Atom::SymbolTableInclusion	getSymbolTableInclusion() const	{ return ObjectFile::Atom::kSymbolTableIn; }
+ 	virtual uint64_t								getSize() const				{ return 0; }
+ 	virtual const char*								getSectionName() const		{ return "._imports"; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	typedef typename A::P					P;
+ 	const char*								fName;
+ };
+@@ -1497,8 +1497,8 @@ public:
+ 	virtual const char*						getSectionName() const		{ return "__text"; }
+ 	virtual void							copyRawContent(uint8_t buffer[]) const;
+ 	uint64_t								getFinalTargetAdress() const { return fFinalTarget.getAddress() + fFinalTargetOffset; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	enum IslandKind { kBranchIslandToARM, kBranchIslandToThumb2, kBranchIslandToThumb1, kBranchIslandNoPicToThumb1 };
+ 	const char*								fName;
+ 	ObjectFile::Atom&						fTarget;
+@@ -1523,10 +1523,10 @@ public:
+ 	ObjectFile::Atom*						getTarget()					{ return &fTarget; }
+ 	virtual uint32_t						getOrdinal() const			{ return fSortingOrdinal; }
+ 	void									setSortingOrdinal(uint32_t o) { fSortingOrdinal = o; }
++	using WriterAtom<A>::fWriter;
+ private:
+ 	static const char*						stubName(const char* importName);
+ 	friend class LazyPointerAtom<A>;
+-	using WriterAtom<A>::fWriter;
+ 	enum StubKind { kStubPIC, kStubNoPIC, kStubShort, kJumpTable };
+ 	const char*								fName;
+ 	ObjectFile::Atom&						fTarget;
+@@ -1552,8 +1552,8 @@ public:
+ 	virtual void									copyRawContent(uint8_t buffer[]) const;
+ 	virtual ObjectFile::Alignment					getAlignment() const			{ return ObjectFile::Alignment(0); }
+ 	virtual uint32_t								getOrdinal() const				{ return 0; }
+-protected:
+ 	using WriterAtom<A>::fWriter;
++protected:
+ 	std::vector<ObjectFile::Reference*>		fReferences;
+ };
+ 
+@@ -1572,8 +1572,8 @@ public:
+ 	virtual void									copyRawContent(uint8_t buffer[]) const;
+ 	virtual ObjectFile::Alignment					getAlignment() const			{ return ObjectFile::Alignment(0); }
+ 	virtual uint32_t								getOrdinal() const				{ return 0; }
+-protected:
+ 	using WriterAtom<A>::fWriter;
++protected:
+ 	std::vector<ObjectFile::Reference*>		fReferences;
+ };
+ 
+@@ -1596,9 +1596,9 @@ public:
+ 	ObjectFile::Atom*						getTarget()					{ return &fTarget; }
+ 	virtual ObjectFile::Alignment			getAlignment() const		{ return ObjectFile::Alignment(0); }
+ 	virtual uint32_t						getOrdinal() const			{ return 1; }
++	using WriterAtom<A>::fWriter;
+ protected:
+ 	static const char*						stubName(const char* importName);
+-	using WriterAtom<A>::fWriter;
+ 	const char*								fName;
+ 	ObjectFile::Atom&						fTarget;
+ 	LazyPointerAtom<A>&						fLazyPointerAtom;
+@@ -1662,8 +1662,8 @@ public:
+ 	uint32_t								getLazyBindingInfoOffset()	{ return fLazyBindingOffset; }
+ 	virtual uint32_t						getOrdinal() const			{ return fSortingOrdinal; }
+ 	void									setSortingOrdinal(uint32_t o) { fSortingOrdinal = o; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	static const char*						lazyPointerName(const char* importName);
+ 	const char*								fName;
+ 	ObjectFile::Atom&						fTarget;
+@@ -1693,8 +1693,8 @@ public:
+ 	ObjectFile::Atom*						getTarget()					{ return fTarget; }
+ 	virtual uint32_t						getOrdinal() const			{ return fSortingOrdinal; }
+ 	void									setSortingOrdinal(uint32_t o) { fSortingOrdinal = o; }
+-private:
+ 	using WriterAtom<A>::fWriter;
++private:
+ 	static const char*						nonlazyPointerName(const char* importName);
+ 	const char*								fName;
+ 	ObjectFile::Atom*						fTarget;
+-- 
+1.7.1
+

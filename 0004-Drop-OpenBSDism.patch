@@ -1,0 +1,27 @@
+From 68658c0d109ce556737ce7e0f7308386500a5049 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sat, 1 Oct 2011 16:58:33 +0200
+Subject: [PATCH 4/8] Drop OpenBSDism
+
+---
+ src/ld/Options.cpp |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/ld/Options.cpp b/src/ld/Options.cpp
+index 46a452f..8f25585 100644
+--- a/src/ld/Options.cpp
++++ b/src/ld/Options.cpp
+@@ -3595,8 +3595,8 @@ void Options::checkForClassic(int argc, const char* argv[])
+ 	
+ 	// build command line buffer in case ld crashes
+ 	for(int i=1; i < argc; ++i) {
+-		strlcat(crashreporterBuffer, argv[i], 1000);
+-		strlcat(crashreporterBuffer, " ", 1000);
++		strncat(crashreporterBuffer, argv[i], 1000 - strlen(crashreporterBuffer) - 1);
++		strncat(crashreporterBuffer, " ", 1000 - strlen(crashreporterBuffer) - 1);
+ 	}
+ 
+ 	for(int i=0; i < argc; ++i) {
+-- 
+1.7.1
+

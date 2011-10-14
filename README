@@ -1,0 +1,27 @@
+What is this?
+=============
+
+Scripts for automated build of RPM packages of toolchain for development
+of iPhone OS (Darwin for ARM) applications on Fedora operating system
+and derivatives (such as Red Hat Enterprise Linux, Scientific Linux and
+CentOS).
+
+How to build it
+===============
+
+0.) Place iPhoneSDK4_3.pkg and MacOSX10.6.pkg files from XCode
+    bundle into the working directory
+1.) Run buildit.sh
+
+Solving problems
+================
+
+If you're missing a required tool, you'll be told to install it.
+One such required tool is called "mock," and it need some configuration:
+
+After installing mock, add yourself to mock group and re-login.
+
+Source code
+===========
+
+Here: https://github.com/rotten-apples

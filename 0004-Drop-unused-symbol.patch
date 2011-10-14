@@ -1,0 +1,34 @@
+From d278ede4d960f51c5d297cd9df1069baf5a07ef8 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 30 Sep 2011 20:04:54 +0200
+Subject: [PATCH 4/9] Drop unused symbol
+
+---
+ ld/uuid.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/ld/uuid.c b/ld/uuid.c
+index 718ad78..e8c0994 100644
+--- a/ld/uuid.c
++++ b/ld/uuid.c
+@@ -36,6 +36,7 @@
+ #include <mach-o/loader.h>
+ #endif /* !(defined(KLD) && defined(__STATIC__)) */
+ #include <stdlib.h>
++#include <fcntl.h>
+ 
+ /*
+  * uuid() is called to set the uuid[] bytes for the uuid load command.
+@@ -48,7 +49,9 @@ uint8_t *uuid)
+     struct uuid_command u;
+ #if !(defined(KLD) && defined(__STATIC__))
+     void (*uuid_func)(uint8_t *out);
++#if 0
+     NSSymbol nssymbol;
++#endif
+     int fd;
+     ssize_t n;
+ 
+-- 
+1.7.1
+

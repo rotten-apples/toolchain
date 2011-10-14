@@ -1,0 +1,50 @@
+From 82f55272197d64be1ff6f9f6943a9e8c05e314d5 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 30 Sep 2011 07:38:43 +0200
+Subject: [PATCH 3/8] Add missing headers
+
+---
+ src/ld/MachOReaderRelocatable.hpp |    1 +
+ src/ld/MachOWriterExecutable.hpp  |    1 +
+ src/ld/Options.cpp                |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/src/ld/MachOReaderRelocatable.hpp b/src/ld/MachOReaderRelocatable.hpp
+index 1e3dfdc..26f3e5b 100644
+--- a/src/ld/MachOReaderRelocatable.hpp
++++ b/src/ld/MachOReaderRelocatable.hpp
+@@ -30,6 +30,7 @@
+ #include <unistd.h>
+ #include <sys/param.h>
+ 
++#include <cstdio>
+ #include <vector>
+ #include <set>
+ #include <algorithm>
+diff --git a/src/ld/MachOWriterExecutable.hpp b/src/ld/MachOWriterExecutable.hpp
+index 22716b7..82dc56f 100644
+--- a/src/ld/MachOWriterExecutable.hpp
++++ b/src/ld/MachOWriterExecutable.hpp
+@@ -35,6 +35,7 @@
+ #include <mach/ppc/thread_status.h>
+ #include <openssl/md5.h>
+ 
++#include <cstring>
+ #include <vector>
+ #include <algorithm>
+ #include <map>
+diff --git a/src/ld/Options.cpp b/src/ld/Options.cpp
+index d090f3d..46a452f 100644
+--- a/src/ld/Options.cpp
++++ b/src/ld/Options.cpp
+@@ -31,6 +31,7 @@
+ #include <limits.h>
+ #include <stdarg.h>
+ #include <vector>
++#include <cstdio>
+ 
+ #include "Options.h"
+ #include "Architectures.hpp"
+-- 
+1.7.1
+

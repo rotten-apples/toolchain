@@ -1,0 +1,192 @@
+From 490d632a8fd3a484d946beabe0b0a582b4d16829 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 30 Sep 2011 09:52:46 +0200
+Subject: [PATCH 3/3] toolwhip changes
+
+usr_include_maker/usr_include.patch
+---
+ SDKs/MacOSX10.6.sdk/usr/include/i386/_types.h      |    5 +++--
+ .../usr/include/libkern/_OSByteOrder.h             |    2 +-
+ .../usr/include/mach/i386/_structs.h               |    2 ++
+ .../usr/include/mach/i386/thread_status.h          |    4 ++++
+ .../MacOSX10.6.sdk/usr/include/mach/ppc/_structs.h |    6 ------
+ .../usr/include/mach/ppc/thread_status.h           |    8 ++++----
+ 6 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/i386/_types.h b/SDKs/MacOSX10.6.sdk/usr/include/i386/_types.h
+index 67741d5..bb45b8b 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/i386/_types.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/i386/_types.h
+@@ -43,8 +43,6 @@ typedef	short			__int16_t;
+ typedef	unsigned short		__uint16_t;
+ typedef int			__int32_t;
+ typedef unsigned int		__uint32_t;
+-typedef long long		__int64_t;
+-typedef unsigned long long	__uint64_t;
+ 
+ typedef long			__darwin_intptr_t;
+ typedef unsigned int		__darwin_natural_t;
+@@ -73,12 +71,15 @@ typedef int			__darwin_ct_rune_t;	/* ct_rune_t */
+  * mbstate_t is an opaque object to keep conversion state, during multibyte
+  * stream conversions.  The content must not be referenced by user programs.
+  */
++#ifndef __mbstate_t_defined
++#define __mbstate_t_defined 1
+ typedef union {
+ 	char		__mbstate8[128];
+ 	long long	_mbstateL;			/* for alignment */
+ } __mbstate_t;
+ 
+ typedef __mbstate_t		__darwin_mbstate_t;	/* mbstate_t */
++#endif
+ 
+ #if defined(__GNUC__) && defined(__PTRDIFF_TYPE__)
+ typedef __PTRDIFF_TYPE__	__darwin_ptrdiff_t;	/* ptr1 - ptr2 */
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/libkern/_OSByteOrder.h b/SDKs/MacOSX10.6.sdk/usr/include/libkern/_OSByteOrder.h
+index e6a30a1..1eddead 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/libkern/_OSByteOrder.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/libkern/_OSByteOrder.h
+@@ -37,7 +37,7 @@
+  * <libkern/arch/_OSByteOrder.h> for little-endian architectures.
+  */
+ 
+-#include <sys/_types.h>
++#include <sys/types.h>
+ 
+ /* Macros for swapping constant values in the preprocessing stage. */
+ #define __DARWIN_OSSwapConstInt16(x) \
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/_structs.h b/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/_structs.h
+index 927d12f..268c35a 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/_structs.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/_structs.h
+@@ -32,6 +32,8 @@
+ #ifndef	_MACH_I386__STRUCTS_H_
+ #define	_MACH_I386__STRUCTS_H_
+ 
++#include <sys/types.h>
++
+ /*
+  * i386 is the structure that is exported to user threads for 
+  * use in status/mutate calls.  This structure should never change.
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/thread_status.h b/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/thread_status.h
+index 65773e3..d3f8ba0 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/thread_status.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/thread_status.h
+@@ -109,6 +109,7 @@
+ #define x86_DEBUG_STATE32		10
+ #define x86_DEBUG_STATE64		11
+ #define x86_DEBUG_STATE			12
++#if defined (__i386__) || defined(__x86_64__)
+ #define THREAD_STATE_NONE		13
+ 
+ /*
+@@ -137,6 +138,7 @@
+ 	  (x == x86_EXCEPTION_STATE)	|| \
+ 	  (x == x86_DEBUG_STATE)	|| \
+ 	  (x == THREAD_STATE_NONE))
++#endif
+ 
+ struct x86_state_hdr {
+ 	int	flavor;
+@@ -269,8 +271,10 @@ typedef struct x86_debug_state x86_debug_state_t;
+  * Machine-independent way for servers and Mach's exception mechanism to
+  * choose the most efficient state flavor for exception RPC's:
+  */
++#if defined (__i386__) || defined(__x86_64__)
+ #define MACHINE_THREAD_STATE		x86_THREAD_STATE
+ #define MACHINE_THREAD_STATE_COUNT	x86_THREAD_STATE_COUNT
++#endif
+ 
+ /*
+  * when reloading the segment registers on
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/_structs.h b/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/_structs.h
+index f2c78cd..e18e52a 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/_structs.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/_structs.h
+@@ -136,8 +136,6 @@ _STRUCT_PPC_THREAD_STATE
+ };
+ #endif /* __DARWIN_UNIX03 */
+ 
+-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+-
+ #pragma pack(4)			/* Make sure the structure stays as we defined it */
+ 
+ #if __DARWIN_UNIX03
+@@ -236,8 +234,6 @@ _STRUCT_PPC_THREAD_STATE64
+ 
+ #pragma pack()
+ 
+-#endif /* (_POSIX_C_SOURCE && !_DARWIN_C_SOURCE) */
+-
+ /* This structure should be double-word aligned for performance */
+ 
+ #if __DARWIN_UNIX03
+@@ -353,7 +349,6 @@ _STRUCT_PPC_EXCEPTION_STATE
+ };
+ #endif /* __DARWIN_UNIX03 */
+ 
+-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+ #if __DARWIN_UNIX03
+ #define _STRUCT_PPC_EXCEPTION_STATE64	struct __darwin_ppc_exception_state64
+ _STRUCT_PPC_EXCEPTION_STATE64
+@@ -385,7 +380,6 @@ _STRUCT_PPC_EXCEPTION_STATE64
+ #endif
+ };
+ #endif /* __DARWIN_UNIX03 */
+-#endif /* (_POSIX_C_SOURCE && !_DARWIN_C_SOURCE) */
+ 
+ #pragma pack()
+ 
+diff --git a/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/thread_status.h b/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/thread_status.h
+index ba077f7..1fbda66 100644
+--- a/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/thread_status.h
++++ b/SDKs/MacOSX10.6.sdk/usr/include/mach/ppc/thread_status.h
+@@ -47,6 +47,7 @@
+ #define PPC_VECTOR_STATE		4
+ #define PPC_THREAD_STATE64		5
+ #define PPC_EXCEPTION_STATE64	6
++#if defined (__ppc__) || defined (__ppc64__)
+ #define THREAD_STATE_NONE		7
+ 	       
+ /*
+@@ -64,11 +65,10 @@
+          (x == PPC_THREAD_STATE64)      || \
+          (x == PPC_EXCEPTION_STATE64)   || \
+          (x == THREAD_STATE_NONE))
++#endif
+ 
+ typedef _STRUCT_PPC_THREAD_STATE	ppc_thread_state_t;
+-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+ typedef _STRUCT_PPC_THREAD_STATE64	ppc_thread_state64_t;
+-#endif /* (_POSIX_C_SOURCE && !_DARWIN_C_SOURCE) */
+ typedef _STRUCT_PPC_FLOAT_STATE		ppc_float_state_t;
+ typedef _STRUCT_PPC_VECTOR_STATE	ppc_vector_state_t;
+ 
+@@ -109,9 +109,7 @@ typedef struct ppc_thread_state			ppc_saved_state_t;
+ /* of covering the full potential state (hi half available). */
+ 
+ typedef _STRUCT_PPC_EXCEPTION_STATE	ppc_exception_state_t;
+-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+ typedef _STRUCT_PPC_EXCEPTION_STATE64	ppc_exception_state64_t;
+-#endif /* (_POSIX_C_SOURCE && !_DARWIN_C_SOURCE) */
+ 
+ /*
+  * Save State Flags
+@@ -139,6 +137,7 @@ typedef _STRUCT_PPC_EXCEPTION_STATE64	ppc_exception_state64_t;
+  * Machine-independent way for servers and Mach's exception mechanism to
+  * choose the most efficient state flavor for exception RPC's:
+  */
++#if defined (__ppc__) || defined (__ppc64__)
+ #define MACHINE_THREAD_STATE		PPC_THREAD_STATE
+ #define MACHINE_THREAD_STATE_COUNT	PPC_THREAD_STATE_COUNT
+ 
+@@ -146,5 +145,6 @@ typedef _STRUCT_PPC_EXCEPTION_STATE64	ppc_exception_state64_t;
+  * Largest state on this machine:
+  */
+ #define THREAD_MACHINE_STATE_MAX	THREAD_STATE_MAX
++#endif
+ 
+ #endif /* _MACH_PPC_THREAD_STATUS_H_ */
+-- 
+1.7.1
+

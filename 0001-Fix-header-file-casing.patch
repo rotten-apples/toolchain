@@ -1,0 +1,25 @@
+From 58b57dbe8e31ee5d502420c296e5deea87e48645 Mon Sep 17 00:00:00 2001
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Sun, 2 Jan 2011 18:41:42 +0100
+Subject: [PATCH] Fix header file casing
+
+---
+ include/QuartzCore/QuartzCore.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/QuartzCore/QuartzCore.h b/include/QuartzCore/QuartzCore.h
+index e03c40e..1cd7275 100644
+--- a/include/QuartzCore/QuartzCore.h
++++ b/include/QuartzCore/QuartzCore.h
+@@ -8,7 +8,7 @@
+ #import <QuartzCore/CAContext.h>
+ #import <QuartzCore/CAContextImpl.h>
+ #import <QuartzCore/CAFilter.h>
+-#import <QuartzCore/CAKeyframeAnimation.h>
++#import <QuartzCore/CAKeyFrameAnimation.h>
+ #import <QuartzCore/CALayer.h>
+ #import <QuartzCore/CAPropertyAnimation.h>
+ #import <QuartzCore/CAScrollLayer.h>
+-- 
+1.7.3.2
+

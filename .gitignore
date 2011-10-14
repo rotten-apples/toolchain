@@ -1,0 +1,6 @@
+*.gz
+*.pkg
+*.cc
+*.src.rpm
+resultdir*
+
