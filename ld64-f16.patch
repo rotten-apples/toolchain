@@ -1,0 +1,139 @@
+diff -urp ld64-97.17/src/ld/ld.cpp ld64-97.17.f16/src/ld/ld.cpp
+--- ld64-97.17/src/ld/ld.cpp	2011-10-14 16:50:10.446641241 +0200
++++ ld64-97.17.f16/src/ld/ld.cpp	2011-10-14 16:18:49.662652670 +0200
+@@ -3304,42 +3304,42 @@ ObjectFile::Reader* Linker::createReader
+ 	switch (fArchitecture) {
+ 		case CPU_TYPE_POWERPC:
+ 			if ( mach_o::relocatable::Reader<ppc>::validFile(p) )
+-				return this->addObject(new mach_o::relocatable::Reader<ppc>::Reader(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addObject(new mach_o::relocatable::Reader<ppc>(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( mach_o::dylib::Reader<ppc>::validFile(p, info.options.fBundleLoader) )
+-				return this->addDylib(new mach_o::dylib::Reader<ppc>::Reader(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addDylib(new mach_o::dylib::Reader<ppc>(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( archive::Reader<ppc>::validFile(p, len) )
+-				return this->addArchive(new archive::Reader<ppc>::Reader(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addArchive(new archive::Reader<ppc>(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			break;
+ 		case CPU_TYPE_POWERPC64:
+ 			if ( mach_o::relocatable::Reader<ppc64>::validFile(p) )
+-				return this->addObject(new mach_o::relocatable::Reader<ppc64>::Reader(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addObject(new mach_o::relocatable::Reader<ppc64>(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( mach_o::dylib::Reader<ppc64>::validFile(p, info.options.fBundleLoader) )
+-				return this->addDylib(new mach_o::dylib::Reader<ppc64>::Reader(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addDylib(new mach_o::dylib::Reader<ppc64>(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( archive::Reader<ppc64>::validFile(p, len) )
+-				return this->addArchive(new archive::Reader<ppc64>::Reader(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addArchive(new archive::Reader<ppc64>(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			break;
+ 		case CPU_TYPE_I386:
+ 			if ( mach_o::relocatable::Reader<x86>::validFile(p) )
+-				return this->addObject(new mach_o::relocatable::Reader<x86>::Reader(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addObject(new mach_o::relocatable::Reader<x86>(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( mach_o::dylib::Reader<x86>::validFile(p, info.options.fBundleLoader) )
+-				return this->addDylib(new mach_o::dylib::Reader<x86>::Reader(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addDylib(new mach_o::dylib::Reader<x86>(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( archive::Reader<x86>::validFile(p, len) )
+-				return this->addArchive(new archive::Reader<x86>::Reader(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addArchive(new archive::Reader<x86>(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			break;
+ 		case CPU_TYPE_X86_64:
+ 			if ( mach_o::relocatable::Reader<x86_64>::validFile(p) )
+-				return this->addObject(new mach_o::relocatable::Reader<x86_64>::Reader(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addObject(new mach_o::relocatable::Reader<x86_64>(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( mach_o::dylib::Reader<x86_64>::validFile(p, info.options.fBundleLoader) )
+-				return this->addDylib(new mach_o::dylib::Reader<x86_64>::Reader(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addDylib(new mach_o::dylib::Reader<x86_64>(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( archive::Reader<x86_64>::validFile(p, len) )
+-				return this->addArchive(new archive::Reader<x86_64>::Reader(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addArchive(new archive::Reader<x86_64>(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 		case CPU_TYPE_ARM:
+ 			if ( mach_o::relocatable::Reader<arm>::validFile(p, objSubtypeMustMatch, fOptions.subArchitecture()) )
+-					return this->addObject(new mach_o::relocatable::Reader<arm>::Reader(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++					return this->addObject(new mach_o::relocatable::Reader<arm>(p, info.path, info.modTime, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( mach_o::dylib::Reader<arm>::validFile(p, info.options.fBundleLoader) )
+-				return this->addDylib(new mach_o::dylib::Reader<arm>::Reader(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addDylib(new mach_o::dylib::Reader<arm>(p, len, info.path, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			else if ( archive::Reader<arm>::validFile(p, len) )
+-				return this->addArchive(new archive::Reader<arm>::Reader(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
++				return this->addArchive(new archive::Reader<arm>(p, len, info.path, info.modTime, info.options, fOptions.readerOptions(), fNextInputOrdinal), info, len);
+ 			break;
+ 	}
+ 
+diff -urp ld64-97.17/src/ld/MachOReaderRelocatable.hpp ld64-97.17.f16/src/ld/MachOReaderRelocatable.hpp
+--- ld64-97.17/src/ld/MachOReaderRelocatable.hpp	2011-10-14 16:50:10.429640653 +0200
++++ ld64-97.17.f16/src/ld/MachOReaderRelocatable.hpp	2011-10-14 16:49:47.118652318 +0200
+@@ -155,7 +155,7 @@ Reference<A>::Reference(Kinds kind, cons
+ 		//fprintf(stderr, "Reference(): changing to by-name %p %s, target scope=%d, target section=%s\n", toTarget.atom, fToTargetName, toTarget.atom->getScope(), toTarget.atom->getSectionName());
+ 		fToTarget.atom = NULL;
+ 	}
+-	((class BaseAtom*)at.atom)->addReference(this);
++	//XX//((class BaseAtom*)at.atom)->addReference(this);
+ 	//fprintf(stderr, "Reference(): %p fToTarget<%s, %08X>\n", this, (fToTarget.atom != NULL) ? fToTarget.atom->getDisplayName() : fToTargetName , fToTarget.offset);
+ }
+ 
+@@ -172,7 +172,7 @@ Reference<A>::Reference(Kinds kind, cons
+ 			fToTargetName = toTarget.atom->getName();
+ 			fToTarget.atom = NULL;
+ 	}
+-	((class BaseAtom*)at.atom)->addReference(this);
++	//XX//((class BaseAtom*)at.atom)->addReference(this);
+ 	//fprintf(stderr, "Reference(): %p kind=%d, fToTarget<%s, %08X>, fromTarget<%s, %08X>\n", this, kind,
+ 	//	 this->getTargetName(), fToTarget.offset, this->getFromTargetName(), fromTarget.offset);
+ }
+@@ -183,7 +183,7 @@ Reference<A>::Reference(Kinds kind, cons
+    fToTargetName(toName), fFromTargetName(NULL), fKind(kind)
+ {
+ 	fToTarget.offset = toOffset;
+-	((class BaseAtom*)at.atom)->addReference(this);
++	//XX//((class BaseAtom*)at.atom)->addReference(this);
+ }
+ 
+ template <typename A>
+diff -urp ld64-97.17/src/ld/MachOWriterExecutable.hpp ld64-97.17.f16/src/ld/MachOWriterExecutable.hpp
+--- ld64-97.17/src/ld/MachOWriterExecutable.hpp	2011-10-14 16:50:10.467646651 +0200
++++ ld64-97.17.f16/src/ld/MachOWriterExecutable.hpp	2011-10-14 16:13:02.293652502 +0200
+@@ -1915,7 +1915,7 @@ HybridStubHelperAtom<x86_64>::HybridStub
+ 	: StubHelperAtom<x86_64>(writer, target, lazyPointer, forLazyDylib)
+ {
+ 	if ( fgHelperHelperAtom == NULL ) {
+-		fgHelperHelperAtom = new HybridStubHelperHelperAtom<x86_64>::HybridStubHelperHelperAtom(fWriter);
++		fgHelperHelperAtom = new HybridStubHelperHelperAtom<x86_64>(fWriter);
+ 		fWriter.fAllSynthesizedStubHelpers.push_back(fgHelperHelperAtom);
+ 	}
+ 	fReferences.push_back(new WriterReference<x86_64>(8,  x86_64::kPCRel32, &fLazyPointerAtom));
+@@ -1963,7 +1963,7 @@ FastStubHelperAtom<x86_64>::FastStubHelp
+ 	: StubHelperAtom<x86_64>(writer, target, lazyPointer, forLazyDylib)
+ {
+ 	if ( fgHelperHelperAtom == NULL ) {
+-		fgHelperHelperAtom = new FastStubHelperHelperAtom<x86_64>::FastStubHelperHelperAtom(fWriter);
++		fgHelperHelperAtom = new FastStubHelperHelperAtom<x86_64>(fWriter);
+ 		fWriter.fAllSynthesizedStubHelpers.push_back(fgHelperHelperAtom);
+ 	}
+ 	fReferences.push_back(new WriterReference<x86_64>(6, x86_64::kPCRel32, fgHelperHelperAtom));
+@@ -2068,7 +2068,7 @@ FastStubHelperAtom<arm>::FastStubHelperA
+ 	: StubHelperAtom<arm>(writer, target, lazyPointer, forLazyDylib)
+ {
+ 	if ( fgHelperHelperAtom == NULL ) {
+-		fgHelperHelperAtom = new FastStubHelperHelperAtom<arm>::FastStubHelperHelperAtom(fWriter);
++		fgHelperHelperAtom = new FastStubHelperHelperAtom<arm>(fWriter);
+ 		fWriter.fAllSynthesizedStubHelpers.push_back(fgHelperHelperAtom);
+ 	}
+ 	fReferences.push_back(new WriterReference<arm>(4, arm::kBranch24, fgHelperHelperAtom));
+@@ -2197,7 +2197,7 @@ HybridStubHelperAtom<x86>::HybridStubHel
+ 	: StubHelperAtom<x86>(writer, target, lazyPointer, forLazyDylib)
+ {
+ 	if ( fgHelperHelperAtom == NULL ) {
+-		fgHelperHelperAtom = new HybridStubHelperHelperAtom<x86>::HybridStubHelperHelperAtom(fWriter);
++		fgHelperHelperAtom = new HybridStubHelperHelperAtom<x86>(fWriter);
+ 		fWriter.fAllSynthesizedStubHelpers.push_back(fgHelperHelperAtom);
+ 	}	
+ 	fReferences.push_back(new WriterReference<x86>(6,  x86::kAbsolute32, &fLazyPointerAtom));
+@@ -2245,7 +2245,7 @@ FastStubHelperAtom<x86>::FastStubHelperA
+ 	: StubHelperAtom<x86>(writer, target, lazyPointer, forLazyDylib)
+ {
+ 	if ( fgHelperHelperAtom == NULL ) {
+-		fgHelperHelperAtom = new FastStubHelperHelperAtom<x86>::FastStubHelperHelperAtom(fWriter);
++		fgHelperHelperAtom = new FastStubHelperHelperAtom<x86>(fWriter);
+ 		fWriter.fAllSynthesizedStubHelpers.push_back(fgHelperHelperAtom);
+ 	}
+ 	fReferences.push_back(new WriterReference<x86>(6, x86::kPCRel32, fgHelperHelperAtom));

@@ -16,6 +16,7 @@ Patch5:         0005-Comment-out-more-of-LTO-support.patch
 Patch6:         0006-Get-rid-of-_NSGetExecutablePath-use.patch
 Patch7:         0007-Publicize-fWriters.patch
 Patch8:         0008-Restore-support-for-aspen_version_min.patch
+Patch666: ld64-f16.patch
 
 Source1:        http://www.opensource.apple.com/tarballs/libunwind/libunwind-30.tar.gz
 Patch11:        0001-Fix-i386-register-names.patch
@@ -42,6 +43,7 @@ operating systems.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch666 -p1
 
 ln -sf ../../libunwind-30/src src/ld/libunwind
 tar xzf %{SOURCE1}
